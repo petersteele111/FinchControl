@@ -1,6 +1,6 @@
 ﻿using FinchAPI;
 using System;
-using System.Threading;
+using System.Linq;
 
 namespace FinchTalentShow
 {
@@ -63,7 +63,7 @@ namespace FinchTalentShow
         public enum LightSensorMenu : byte
         {
             Light = 1,
-            Fun,
+            Average,
             Back
         }
 
@@ -578,7 +578,7 @@ namespace FinchTalentShow
 
   1. Get Light Sensor Data
 
-  2. Fun
+  2. Get Light Sensor Data Averaged
 
   3. Back
 
@@ -595,7 +595,7 @@ namespace FinchTalentShow
 
 
 
-  Option (1-3: ", 1, 3);
+  Option (1-3): ", 1, 3);
             return userResponse;
         }
 
@@ -609,10 +609,12 @@ namespace FinchTalentShow
                     DisplayConnectFinch();
                     DisplayLightSensorData(getLightSensorData());
                     break;
-                case LightSensorMenu.Fun:
+                case LightSensorMenu.Average:
+                    DisplayConnectFinch();
+                    DisplayLightSensorDataAverage(getLightSensorData());
                     break;
                 case LightSensorMenu.Back:
-                    DisplayLightSensorMenu();
+                    getDataRecorderMenuOption(DisplayDataRecorderMenu());
                     break;
                 default:
                     break;
@@ -655,7 +657,7 @@ namespace FinchTalentShow
             {
                 case TempSensorMenu.Temp:
                     DisplayConnectFinch();
-                    DisplayTempSensorData(getTempSensorData());
+                    DisplayTempSensorData();
                     break;
                 case TempSensorMenu.Back:
                     DisplayDataRecorderMenu();
@@ -1000,7 +1002,7 @@ namespace FinchTalentShow
         /// Get the Light Sensor Data Parameters
         /// </summary>
         /// <returns>Returns a tuple of the Light Sensor Parameters</returns>
-        private static (int time, int dataPoints) getSensorParams()
+        private static (int time, int dataPoints) getLightSensorParams()
         {
             DisplayConsoleUI("Get Light Sensor Parameters");
             Console.ForegroundColor = ConsoleColor.Green;
@@ -1017,7 +1019,7 @@ namespace FinchTalentShow
         /// <returns>Returns Multidimensional Array of Left and Right Light Sensor Readings</returns>
         private static int[][] getLightSensorData()
         {
-            var values = getSensorParams();
+            var values = getLightSensorParams();
 
             int[][] sensorData = new int[values.dataPoints][];
             for (int i = 0; i < values.dataPoints; i++)
@@ -1041,7 +1043,7 @@ namespace FinchTalentShow
             Console.WriteLine();
             for (int i = 0; i < sensorData.Length; i++)
             {
-                if (sensorData.Length < 9)
+                if (sensorData.Length <= 9)
                 {
                     Console.WriteLine(string.Format($"Data Point #{i + 1} {sensorData[i][0],10}{sensorData[i][1],20}"));
                 }
@@ -1058,47 +1060,156 @@ namespace FinchTalentShow
             DisplayContinuePrompt();
         }
 
-        private static double[] getTempSensorData()
+        /// <summary>
+        /// Displays the Light Sensor Data Averaged
+        /// </summary>
+        /// <param name="sensorData">Jagged Int Array that holds the light sensor data</param>
+        private static void DisplayLightSensorDataAverage(int[][] sensorData)
         {
-            var values = getSensorParams();
-
-            double[] sensorData = new double[values.dataPoints];
-            for (int i = 0; i < values.dataPoints; i++)
-            {
-                sensorData[i] = myFinch.getTemperature();
-                myFinch.wait(values.time*1000);
-            }
-            return sensorData;
-        }
-
-        private static void DisplayTempSensorData(double[] sensorData)
-        {
-            DisplayConsoleUI("Temperature Sensor Data", (sensorData.Length) + 7);
-            Console.SetCursorPosition(0,5);
-            Console.WriteLine("Temperature Sensor Data °C");
+            DisplayConsoleUI("Light Sensor Data", (sensorData.Length) + 7);
+            Console.SetCursorPosition(15, 5);
+            Console.WriteLine("Averaged Light Sensor Data");
             Console.WriteLine();
             for (int i = 0; i < sensorData.Length; i++)
             {
-                if (sensorData.Length < 9)
+                if (sensorData.Length <= 9)
                 {
-                    Console.WriteLine($"Data Point #{i + 1} {sensorData[i]:F2}°C");
+                    Console.WriteLine($"Data Point #{i + 1} {(sensorData[i][0] + sensorData[i][1])/2}");
                 }
                 else
                 {
                     while (i < 9)
                     {
-                        Console.WriteLine($"Data Point # {i + 1} {sensorData[i]:F2}°C");
+                        Console.WriteLine($"Data Point # {i + 1} {(sensorData[i][0] + sensorData[i][1]) / 2}");
                         i++;
                     }
-                    Console.WriteLine($"Data Point #{i + 1} {sensorData[i]:F2}°C");
+                    Console.WriteLine($"Data Point #{i + 1} {(sensorData[i][0] + sensorData[i][1]) / 2}");
                 }
             }
             DisplayContinuePrompt();
         }
 
-        private static void CtoF()
+        /// <summary>
+        /// Get the Parameters for the Temp Sensor Data
+        /// </summary>
+        /// <returns>Returns a Tuple for Frequency and Data Points</returns>
+        private static (int time, int dataPoints) getTempSensorParams()
         {
-            int[] c = new int[]
+            DisplayConsoleUI("Get Temp Sensor Parameters");
+            Console.ForegroundColor = ConsoleColor.Green;
+            int time = isValidInt("Please enter the Frequency you wish to collect Sensor Data (seconds): ", 1, 100000);
+            int dataPoints = isValidInt("Please enter the amount of Data Points you wish to collect: ", 1, 100000);
+            Console.WriteLine();
+            Console.WriteLine($"Gathering the Data. Time until completion: {(double)(time * dataPoints) / 60:F1} mins");
+            return (time, dataPoints);
+        }
+
+        /// <summary>
+        /// Gets the Temperature Sensor Data
+        /// </summary>
+        /// <returns>Returns tuple with double array of sensorData and bool for Farenheight to Celcius</returns>
+        private static (double[] sensorData, bool CtoFa) getTempSensorData()
+        {
+            var values = getTempSensorParams();
+            bool CtoFa = CtoF();
+            double[] sensorData = new double[values.dataPoints];
+            for (int i = 0; i < values.dataPoints; i++)
+            {
+                sensorData[i] = myFinch.getTemperature();
+                myFinch.wait(values.time * 1000);
+            }
+            if (CtoFa)
+            {
+                sensorData = convertCtoF(sensorData);
+            }
+            return (sensorData, CtoFa);
+        }
+
+        /// <summary>
+        /// Displays the Temperature Sensor Data to the Screen
+        /// </summary>
+        private static void DisplayTempSensorData()
+        {
+            var values = getTempSensorData();
+
+            bool CtoF = values.CtoFa;
+            string tempFormat;
+
+            if (CtoF)
+            {
+                tempFormat = "°F";
+            }
+            else
+            {
+                tempFormat = "°C";
+            }
+
+            DisplayConsoleUI("Temperature Sensor Data", (values.sensorData.Length) + 7);
+            Console.SetCursorPosition(0,5);
+            Console.WriteLine("Temperature Sensor Data");
+            Console.WriteLine();
+            for (int i = 0; i < values.sensorData.Length; i++)
+            {
+                if (values.sensorData.Length < 9)
+                {
+                    Console.WriteLine($"Data Point #{i + 1} {values.sensorData[i]:F2}{tempFormat}");
+                }
+                else
+                {
+                    while (i < 9)
+                    {
+                        Console.WriteLine($"Data Point # {i + 1} {values.sensorData[i]:F2}{tempFormat}");
+                        i++;
+                    }
+                    Console.WriteLine($"Data Point #{i + 1} {values.sensorData[i]:F2}{tempFormat}");
+                }
+            }
+            DisplayContinuePrompt();
+        }
+
+        /// <summary>
+        /// Prompts the user if they want the Temperature Sensor Data in Celcius or Farenheight
+        /// </summary>
+        /// <returns>Returns boolean value indicating if they wish to convert to Farenheight or not</returns>
+        private static bool CtoF()
+        {
+            bool isValid = false;
+            bool FtoC = false;
+            while (!isValid)
+            {
+                Console.WriteLine();
+                Console.Write("Would you like the Temperature to be in Celcius or Farenheight (C or F): ");
+                string userResponse = Console.ReadLine().ToUpper().Trim();
+                if (userResponse.Equals("C") || userResponse.Equals("F"))
+                {
+                    isValid = true;
+                    if (userResponse.Equals("F"))
+                    {
+                        FtoC = true;
+                    }
+                }
+                else
+                {
+                    Console.WriteLine("Sorry I don't understand your response. Please only input C or F");
+                    Console.WriteLine();
+                }
+            }
+            return FtoC;
+        }
+
+        /// <summary>
+        /// Converts the Celcius data to Farenheight
+        /// </summary>
+        /// <param name="sensorData">Double Array of temperature sensor data</param>
+        /// <returns>Returns converted Double Array of temperature data in Farenheight</returns>
+        private static double[] convertCtoF(double[] sensorData)
+        {
+            double[] convertedSensorData = new double[sensorData.Length];
+            for (int i = 0; i < sensorData.Length; i++)
+            {
+                convertedSensorData[i] = (sensorData[i] * 1.8) + 32;
+            }
+            return convertedSensorData;
         }
 
         #endregion
