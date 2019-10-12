@@ -1,5 +1,6 @@
 ﻿using FinchAPI;
 using System;
+using System.Threading;
 
 namespace FinchTalentShow
 {
@@ -56,7 +57,19 @@ namespace FinchTalentShow
         {
             Light = 1,
             Temp,
-            Accel,
+            Back
+        }
+
+        public enum LightSensorMenu : byte
+        {
+            Light = 1,
+            Fun,
+            Back
+        }
+
+        public enum TempSensorMenu : byte
+        {
+            Temp = 1,
             Back
         }
 
@@ -87,10 +100,11 @@ namespace FinchTalentShow
         /// <summary>
         /// Generate the main console for the UI
         /// </summary>
-        private static void DisplayConsoleUI(string programName)
+        private static void DisplayConsoleUI(string programName, int bottom = 28)
         {
             // Setup UI for application
             Console.Clear();
+            Console.ForegroundColor = ConsoleColor.Cyan;
             for (int i = 0; i < 120; i++)
             {
                 Console.SetCursorPosition(0 + i, 0);
@@ -103,7 +117,7 @@ namespace FinchTalentShow
             }
             for (int i = 0; i < 120; i++)
             {
-                Console.SetCursorPosition(0 + i, 28);
+                Console.SetCursorPosition(0 + i, bottom);
                 Console.Write("-");
             }
             Console.SetCursorPosition(1, 5);
@@ -173,7 +187,7 @@ namespace FinchTalentShow
   Option (1-7): ", 1, 7);
             return userResponse;
         }
-            
+
         /// <summary>
         /// Performs an action based on the menu option selected
         /// </summary>
@@ -218,6 +232,8 @@ namespace FinchTalentShow
 
             }
         }
+
+        #region TalentShow Menus
 
         /// <summary>
         /// Displays the Talent Show Menu
@@ -271,64 +287,6 @@ namespace FinchTalentShow
                     getWheelMenuOption(DisplayWheelsMenu());
                     break;
                 case TalentShowMenu.Back:
-                    break;
-                default:
-                    DisplayConsoleUI("Invlaid Response");
-                    Console.WriteLine("Sorry I don't understand your response, please try again.");
-                    DisplayContinuePrompt();
-                    break;
-            }
-        }
-
-        /// <summary>
-        /// Displays the Data Recording Menu
-        /// </summary>
-        /// <returns>Returns user option for menu</returns>
-        private static int DisplayDataRecorderMenu()
-        {
-            int userResponse = isValidMenuOption("Data Recorder Control Menu", @"
-             Data Recorder Menu
-  
-  1. Light Sensor Control
-
-  2. Temp Sensor Control
-
-  3. Accelerometer Menu Control
-
-  4. Back
-
-
-
-
-
-
-
-
-
-
-
-
-  Option (1-4): ", 1, 4);
-            return userResponse;
-        }
-
-        /// <summary>
-        /// Gets the Menu option for the Data Recorder Menu
-        /// </summary>
-        /// <param name="option">User selected option for the menu</param>
-        private static void getDataRecorderMenuOption(int option)
-        {
-            DataRedcorderMenu menuOption = (DataRedcorderMenu)option;
-
-            switch (menuOption)
-            {
-                case DataRedcorderMenu.Light:
-                    break;
-                case DataRedcorderMenu.Temp:
-                    break;
-                case DataRedcorderMenu.Accel:
-                    break;
-                case DataRedcorderMenu.Back:
                     break;
                 default:
                     DisplayConsoleUI("Invlaid Response");
@@ -547,6 +505,171 @@ namespace FinchTalentShow
         }
 
         #endregion
+
+        #region DataRecorder Menus
+
+        /// <summary>
+        /// Displays the Data Recording Menu
+        /// </summary>
+        /// <returns>Returns user option for menu</returns>
+        private static int DisplayDataRecorderMenu()
+        {
+            int userResponse = isValidMenuOption("Data Recorder Control Menu", @"
+             Data Recorder Menu
+  
+  1. Light Sensor Control
+
+  2. Temp Sensor Control
+
+  3. Back
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  Option (1-3): ", 1, 3);
+            return userResponse;
+        }
+
+        /// <summary>
+        /// Gets the Menu option for the Data Recorder Menu
+        /// </summary>
+        /// <param name="option">User selected option for the menu</param>
+        private static void getDataRecorderMenuOption(int option)
+        {
+            DataRedcorderMenu menuOption = (DataRedcorderMenu)option;
+
+            switch (menuOption)
+            {
+                case DataRedcorderMenu.Light:
+                    getLightSensorMenuOption(DisplayLightSensorMenu());
+                    break;
+                case DataRedcorderMenu.Temp:
+                    getTempSensorMenuOption(DisplayTempSensorMenu());
+                    break;
+                case DataRedcorderMenu.Back:
+                    DisplayDataRecorderMenu();
+                    break;
+                default:
+                    DisplayConsoleUI("Invlaid Response");
+                    Console.WriteLine("Sorry I don't understand your response, please try again.");
+                    DisplayContinuePrompt();
+                    break;
+            }
+        }
+
+        /// <summary>
+        /// Displays the Light Sensor Menu
+        /// </summary>
+        /// <returns>Returns the user option for the menu</returns>
+        private static int DisplayLightSensorMenu()
+        {
+            int userResponse = isValidMenuOption("Light Sensor Menu", @"
+             Light Sensor
+
+  1. Get Light Sensor Data
+
+  2. Fun
+
+  3. Back
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  Option (1-3: ", 1, 3);
+            return userResponse;
+        }
+
+        private static void getLightSensorMenuOption(int option)
+        {
+            LightSensorMenu menuOption = (LightSensorMenu)option;
+
+            switch (menuOption)
+            {
+                case LightSensorMenu.Light:
+                    DisplayConnectFinch();
+                    DisplayLightSensorData(getLightSensorData());
+                    break;
+                case LightSensorMenu.Fun:
+                    break;
+                case LightSensorMenu.Back:
+                    DisplayLightSensorMenu();
+                    break;
+                default:
+                    break;
+            }
+        }
+
+        private static int DisplayTempSensorMenu()
+        {
+            int userResponse = isValidMenuOption("Temperature Sensor Menu", @"
+             Temperature Sensor
+
+  1. Get Temperature Sensor Data
+
+  2. Back
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  options (1-2): ", 1, 2);
+            return userResponse;
+        }
+
+        private static void getTempSensorMenuOption(int option)
+        {
+            TempSensorMenu menuChoice = (TempSensorMenu)option;
+
+            switch (menuChoice)
+            {
+                case TempSensorMenu.Temp:
+                    DisplayConnectFinch();
+                    DisplayTempSensorData(getTempSensorData());
+                    break;
+                case TempSensorMenu.Back:
+                    DisplayDataRecorderMenu();
+                    break;
+                default:
+                    break;
+            }
+        }
+
+        #endregion
+
+        #endregion
+
+        #region TalentShow Control
 
         #region LED Control
         /// <summary>
@@ -819,7 +942,7 @@ namespace FinchTalentShow
             left = isValidInt("Enter the speed of the Left Wheel (0-255): ", 0, 255);
             right = isValidInt("Enter the speed of the Right Wheel (0-255)", 0, 255);
             time = isValidInt("Enter the time for the Finch Robot to Drive (ms): ", 0, 100000);
-            
+
             return (left, right, time);
         }
 
@@ -865,6 +988,117 @@ namespace FinchTalentShow
             myFinch.setMotors(100, 0);
             myFinch.wait(1000);
             myFinch.setMotors(0, 0);
+        }
+
+        #endregion
+
+        #endregion
+
+        #region DataRecorder Control
+
+        /// <summary>
+        /// Get the Light Sensor Data Parameters
+        /// </summary>
+        /// <returns>Returns a tuple of the Light Sensor Parameters</returns>
+        private static (int time, int dataPoints) getSensorParams()
+        {
+            DisplayConsoleUI("Get Light Sensor Parameters");
+            Console.ForegroundColor = ConsoleColor.Green;
+            int time = isValidInt("Please enter the Frequency you wish to collect Sensor Data (seconds): ", 1, 100000);
+            int dataPoints = isValidInt("Please enter the amount of Data Points you wish to collect: ", 1, 100000);
+            Console.WriteLine();
+            Console.WriteLine($"Gathering the Data. Time until completion: {(double)(time*dataPoints)/60:F1} mins");
+            return (time, dataPoints);
+        }
+
+        /// <summary>
+        /// Get the Light Sensor Data
+        /// </summary>
+        /// <returns>Returns Multidimensional Array of Left and Right Light Sensor Readings</returns>
+        private static int[][] getLightSensorData()
+        {
+            var values = getSensorParams();
+
+            int[][] sensorData = new int[values.dataPoints][];
+            for (int i = 0; i < values.dataPoints; i++)
+            {
+                sensorData[i] = myFinch.getLightSensors();
+                myFinch.wait(values.time*1000);
+            }
+            return sensorData;
+        }
+
+        /// <summary>
+        /// Displays the Light Sensor Data
+        /// </summary>
+        /// <param name="sensorData">Jagged Array containing Left and Right Light Sensor Data</param>
+        private static void DisplayLightSensorData(int[][] sensorData)
+        {
+            DisplayConsoleUI("Light Sensor Data", (sensorData.Length) + 7);
+            Console.SetCursorPosition(15, 5);
+            Console.Write(string.Format($"{"Left Sensor Value", 17}  |  {"Right Sensor Value", 18}"));
+            Console.WriteLine();
+            Console.WriteLine();
+            for (int i = 0; i < sensorData.Length; i++)
+            {
+                if (sensorData.Length < 9)
+                {
+                    Console.WriteLine(string.Format($"Data Point #{i + 1} {sensorData[i][0],10}{sensorData[i][1],20}"));
+                }
+                else
+                {
+                    while (i < 9)
+                    {
+                        Console.WriteLine(string.Format($"Data Point # {i + 1} {sensorData[i][0],10}{sensorData[i][1],20}"));
+                        i++;
+                    }
+                    Console.WriteLine(string.Format($"Data Point #{i + 1} {sensorData[i][0],10}{sensorData[i][1],20}"));
+                }
+            }
+            DisplayContinuePrompt();
+        }
+
+        private static double[] getTempSensorData()
+        {
+            var values = getSensorParams();
+
+            double[] sensorData = new double[values.dataPoints];
+            for (int i = 0; i < values.dataPoints; i++)
+            {
+                sensorData[i] = myFinch.getTemperature();
+                myFinch.wait(values.time*1000);
+            }
+            return sensorData;
+        }
+
+        private static void DisplayTempSensorData(double[] sensorData)
+        {
+            DisplayConsoleUI("Temperature Sensor Data", (sensorData.Length) + 7);
+            Console.SetCursorPosition(0,5);
+            Console.WriteLine("Temperature Sensor Data °C");
+            Console.WriteLine();
+            for (int i = 0; i < sensorData.Length; i++)
+            {
+                if (sensorData.Length < 9)
+                {
+                    Console.WriteLine($"Data Point #{i + 1} {sensorData[i]:F2}°C");
+                }
+                else
+                {
+                    while (i < 9)
+                    {
+                        Console.WriteLine($"Data Point # {i + 1} {sensorData[i]:F2}°C");
+                        i++;
+                    }
+                    Console.WriteLine($"Data Point #{i + 1} {sensorData[i]:F2}°C");
+                }
+            }
+            DisplayContinuePrompt();
+        }
+
+        private static void CtoF()
+        {
+            int[] c = new int[]
         }
 
         #endregion
@@ -979,8 +1213,8 @@ namespace FinchTalentShow
                 isValidInt = int.TryParse(Console.ReadLine(), out x);
                 if (!isValidInt || x < min || x > max)
                 {
-                    isValidInt = false;
                     Console.WriteLine("Sorry, that response isn't valid. Please try again!");
+                    isValidInt = false;
                 }
             }
             return x;
@@ -1006,9 +1240,9 @@ namespace FinchTalentShow
                 isValidMenuChoice = int.TryParse(Console.ReadLine(), out userResponse);
                 if (!isValidMenuChoice || userResponse < min || userResponse > max)
                 {
-                    isValidMenuChoice = false;
                     DisplayConsoleUI("Invalid Option");
                     Console.WriteLine("Sorry, that is not a valid option. Please try again!");
+                    isValidMenuChoice = false;
                     DisplayContinuePrompt();
                 }
             }
