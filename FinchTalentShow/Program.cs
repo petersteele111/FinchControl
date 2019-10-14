@@ -73,6 +73,27 @@ namespace FinchTalentShow
             Back
         }
 
+        public enum AlarmSystemMenu : byte
+        {
+            Light = 1,
+            Temp,
+            Back
+        }
+
+        public enum LightAlarmMenu : byte
+        {
+            Infinite = 1,
+            Timed,
+            Back
+        }
+
+        public enum TempAlarmMenu : byte
+        {
+            Infinite = 1,
+            Timed,
+            Back
+        }
+
         #endregion
 
         #region Main method of the program
@@ -171,7 +192,7 @@ namespace FinchTalentShow
   
   3. Data Recorder
 
-  4. Alarm System (Under Development)
+  4. Alarm System
 
   5. User Programming (Under Development)
 
@@ -205,12 +226,10 @@ namespace FinchTalentShow
                     getTalentShowMenuOption(DisplayTalentShowMenu());
                     break;
                 case Menu.DataRecorder:
-                    DisplayConsoleUI("Data Recorder");
                     getDataRecorderMenuOption(DisplayDataRecorderMenu());
                     break;
                 case Menu.AlarmSystem:
-                    DisplayConsoleUI("Under Development");
-                    Console.WriteLine("This module is under development");
+                    getDisplayAlarmSystemMenuOption(DisplayAlarmSystemMenu());
                     DisplayContinuePrompt();
                     break;
                 case Menu.UserProgramming:
@@ -661,6 +680,68 @@ namespace FinchTalentShow
                     break;
                 case TempSensorMenu.Back:
                     DisplayDataRecorderMenu();
+                    break;
+                default:
+                    break;
+            }
+        }
+
+        #endregion
+
+        #region AlarmSystem Menus
+
+        /// <summary>
+        /// Display the Alarm System Main Menu
+        /// </summary>
+        /// <returns>Returns the menu choice chosen by the user</returns>
+        private static int DisplayAlarmSystemMenu()
+        {
+            int userResponse = isValidMenuOption("Alarm System Menu", @"
+
+             Alarm System Menu
+
+  1. Light Sensor Alarm
+
+  2. Temp Sensor Alarm
+
+  3. Back
+
+
+
+
+
+
+
+
+
+
+
+
+
+  option(1-3): ", 1, 3);
+            return userResponse;
+        }
+
+        /// <summary>
+        /// Performs an action based on the menu option selected
+        /// </summary>
+        /// <param name="option">Menu Option Chosen</param>
+        private static void getDisplayAlarmSystemMenuOption(int option)
+        {
+            AlarmSystemMenu menuChoice = (AlarmSystemMenu)option;
+
+            switch (menuChoice)
+            {
+                case AlarmSystemMenu.Light:
+                    DisplayConnectFinch();
+                    getAlarmSystemParams();
+                    break;
+                case AlarmSystemMenu.Temp:
+                    DisplayConnectFinch();
+                    getAlarmSystemParams();
+                    break;
+                case AlarmSystemMenu.Back:
+                    getMenuOption(DisplayMainMenu());
                     break;
                 default:
                     break;
@@ -1210,6 +1291,21 @@ namespace FinchTalentShow
                 convertedSensorData[i] = (sensorData[i] * 1.8) + 32;
             }
             return convertedSensorData;
+        }
+
+        #endregion
+
+        #region AlarmSystem Control
+
+        private static (int time, int upperBound, int lowerBound) getAlarmSystemParams()
+        {
+            // todo - Make sure to convert the seconds to MS
+            DisplayConsoleUI("Get Alarm System Parameters");
+            int time = isValidInt("Please enter the time (seconds) you wish to run this monitoring system: ", 1, 1000);
+            int upperBound = isValidInt("Please enter the Upper Limit you wish to monitor: ", 1, 255);
+            int lowerBound = isValidInt("Please enter the Lower Limit you wish to monitor: ", 1, 255);
+
+            return (time, upperBound, lowerBound);
         }
 
         #endregion
