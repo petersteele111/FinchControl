@@ -1414,7 +1414,9 @@ namespace FinchTalentShow
         {
             bool isValidInt = false;
             int x = 0;
-            while (!isValidInt)
+            const int MAX_TRIES = 3;
+            int i = 0;
+            while (!isValidInt && i <= MAX_TRIES)
             {
                 Console.Write($"{prompt}");
                 isValidInt = int.TryParse(Console.ReadLine(), out x);
@@ -1422,6 +1424,14 @@ namespace FinchTalentShow
                 {
                     Console.WriteLine("Sorry, that response isn't valid. Please try again!");
                     isValidInt = false;
+                    i++;
+                    if (i > MAX_TRIES)
+                    {
+                        Console.WriteLine("Sorry, but you have tried too many times and failed to put in the correct data. I am exiting the program. Please try again later.");
+                        DisplayContinuePrompt();
+                        quit();
+                        
+                    }
                 }
             }
             return x;
