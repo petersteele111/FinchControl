@@ -77,6 +77,7 @@ namespace FinchTalentShow
         {
             Light = 1,
             Temp,
+            Both,
             Back
         }
 
@@ -178,6 +179,9 @@ namespace FinchTalentShow
 
         #region Menu's of Application
 
+        #region Main Menu
+
+        
         /// <summary>
         /// Generate the main menu for the console
         /// </summary>
@@ -251,6 +255,8 @@ namespace FinchTalentShow
 
             }
         }
+
+        #endregion
 
         #region TalentShow Menus
 
@@ -636,6 +642,9 @@ namespace FinchTalentShow
                     getDataRecorderMenuOption(DisplayDataRecorderMenu());
                     break;
                 default:
+                    DisplayConsoleUI("Invlaid Response");
+                    Console.WriteLine("Sorry I don't understand your response, please try again.");
+                    DisplayContinuePrompt();
                     break;
             }
         }
@@ -682,6 +691,9 @@ namespace FinchTalentShow
                     DisplayDataRecorderMenu();
                     break;
                 default:
+                    DisplayConsoleUI("Invlaid Response");
+                    Console.WriteLine("Sorry I don't understand your response, please try again.");
+                    DisplayContinuePrompt();
                     break;
             }
         }
@@ -704,7 +716,9 @@ namespace FinchTalentShow
 
   2. Temp Sensor Alarm
 
-  3. Back
+  3. Both Light and Temp Alarm
+
+  4. Back
 
 
 
@@ -716,9 +730,7 @@ namespace FinchTalentShow
 
 
 
-
-
-  option(1-3): ", 1, 3);
+  option(1-4): ", 1, 4);
             return userResponse;
         }
 
@@ -728,22 +740,33 @@ namespace FinchTalentShow
         /// <param name="option">Menu Option Chosen</param>
         private static void getDisplayAlarmSystemMenuOption(int option)
         {
+            string alarmType;
             AlarmSystemMenu menuChoice = (AlarmSystemMenu)option;
 
             switch (menuChoice)
             {
                 case AlarmSystemMenu.Light:
+                    alarmType = "light";
                     DisplayConnectFinch();
-                    getAlarmSystemParams();
+                    DisplayLightAlarm(alarmType);
                     break;
                 case AlarmSystemMenu.Temp:
+                    alarmType = "temp";
                     DisplayConnectFinch();
-                    getAlarmSystemParams();
+                    DisplayTempAlarm(alarmType);
+                    break;
+                case AlarmSystemMenu.Both:
+                    alarmType = "both";
+                    DisplayConnectFinch();
+                    DisplayBothAlarms(alarmType);
                     break;
                 case AlarmSystemMenu.Back:
                     getMenuOption(DisplayMainMenu());
                     break;
                 default:
+                    DisplayConsoleUI("Invlaid Response");
+                    Console.WriteLine("Sorry I don't understand your response, please try again.");
+                    DisplayContinuePrompt();
                     break;
             }
         }
@@ -751,6 +774,8 @@ namespace FinchTalentShow
         #endregion
 
         #endregion
+
+        #region Control Systems
 
         #region TalentShow Control
 
@@ -1090,7 +1115,7 @@ namespace FinchTalentShow
             int time = isValidInt("Please enter the Frequency you wish to collect Sensor Data (seconds): ", 1, 100000);
             int dataPoints = isValidInt("Please enter the amount of Data Points you wish to collect: ", 1, 100000);
             Console.WriteLine();
-            Console.WriteLine($"Gathering the Data. Time until completion: {(double)(time*dataPoints)/60:F1} mins");
+            Console.WriteLine($"Gathering the Data. Time until completion: {(double)(time * dataPoints) / 60:F1} mins");
             return (time, dataPoints);
         }
 
@@ -1106,7 +1131,7 @@ namespace FinchTalentShow
             for (int i = 0; i < values.dataPoints; i++)
             {
                 sensorData[i] = myFinch.getLightSensors();
-                myFinch.wait(values.time*1000);
+                myFinch.wait(values.time * 1000);
             }
             return sensorData;
         }
@@ -1119,7 +1144,7 @@ namespace FinchTalentShow
         {
             DisplayConsoleUI("Light Sensor Data", (sensorData.Length) + 7);
             Console.SetCursorPosition(15, 5);
-            Console.Write(string.Format($"{"Left Sensor Value", 17}  |  {"Right Sensor Value", 18}"));
+            Console.Write(string.Format($"{"Left Sensor Value",17}  |  {"Right Sensor Value",18}"));
             Console.WriteLine();
             Console.WriteLine();
             for (int i = 0; i < sensorData.Length; i++)
@@ -1155,7 +1180,7 @@ namespace FinchTalentShow
             {
                 if (sensorData.Length <= 9)
                 {
-                    Console.WriteLine($"Data Point #{i + 1} {(sensorData[i][0] + sensorData[i][1])/2}");
+                    Console.WriteLine($"Data Point #{i + 1} {(sensorData[i][0] + sensorData[i][1]) / 2}");
                 }
                 else
                 {
@@ -1226,7 +1251,7 @@ namespace FinchTalentShow
             }
 
             DisplayConsoleUI("Temperature Sensor Data", (values.sensorData.Length) + 7);
-            Console.SetCursorPosition(0,5);
+            Console.SetCursorPosition(0, 5);
             Console.WriteLine("Temperature Sensor Data");
             Console.WriteLine();
             for (int i = 0; i < values.sensorData.Length; i++)
@@ -1297,16 +1322,253 @@ namespace FinchTalentShow
 
         #region AlarmSystem Control
 
-        private static (int time, int upperBound, int lowerBound) getAlarmSystemParams()
+        /// <summary>
+        /// Get the User parameters for the Alarm System
+        /// </summary>
+        /// <param name="alarmType">Type of Alarm the user wants to run</param>
+        /// <returns>Returns a tuple with the alarm parameters</returns>
+        private static (int time, int lightLowerThreshold, int lightUpperThreshold, double tempLowerThreshold, double tempUpperThreshold) getMultipleAlarmSystemParams(string alarmType)
         {
-            // todo - Make sure to convert the seconds to MS
-            DisplayConsoleUI("Get Alarm System Parameters");
-            int time = isValidInt("Please enter the time (seconds) you wish to run this monitoring system: ", 1, 1000);
-            int upperBound = isValidInt("Please enter the Upper Limit you wish to monitor: ", 1, 255);
-            int lowerBound = isValidInt("Please enter the Lower Limit you wish to monitor: ", 1, 255);
+            DisplayConsoleUI("Get Both Light and Temp Alarm System Parameters");
+            int lightLowerThreshold = 0;
+            int lightUpperThreshold = 0;
+            double tempLowerThreshold = 0;
+            double tempUpperThreshold = 0;
+            int time = isValidInt("Please enter the time (seconds) you wish to run this monitoring system: ", 1, 100000);
+            if (alarmType.Equals("light"))
+            {
+                lightLowerThreshold = isValidInt("Please enter the lower light sensor threshhold (0-255): ", 0, 255);
+                lightUpperThreshold = isValidInt("Please enter the upper light sensor threshold (0-255): ", 0, 255);
 
-            return (time, upperBound, lowerBound);
+                Console.WriteLine("Ok, now that you have entered in the thresholds for the alarm system, hit Enter to Activate the alarm!");
+                DisplayContinuePrompt();
+                return (time, lightLowerThreshold, lightUpperThreshold, tempLowerThreshold, tempUpperThreshold);
+            }
+            else if (alarmType.Equals("temp"))
+            {
+                tempLowerThreshold = isValidDouble("Please enter the lower temp sensor threshold (-40.00 - 150.00): ", -40.00, 150.00);
+                tempUpperThreshold = isValidDouble("Please eneter the upper temp sensor threshold (-40.00 - 150.00): ", -40.00, 150.00);
+
+                Console.WriteLine("Ok, now that you have entered in the thresholds for the alarm system, hit Enter to Activate the alarm!");
+                DisplayContinuePrompt();
+                return (time, lightLowerThreshold, lightUpperThreshold, tempLowerThreshold, tempUpperThreshold);
+            }
+            else
+            {
+                lightLowerThreshold = isValidInt("Please enter the lower light sensor threshhold (0-255): ", 0, 255);
+                lightUpperThreshold = isValidInt("Please enter the upper light sensor threshold (0-255): ", 0, 255);
+                tempLowerThreshold = isValidDouble("Please enter the lower temp sensor threshold (-40.00 - 150.00): ", -40.00, 150.00);
+                tempUpperThreshold = isValidDouble("Please eneter the upper temp sensor threshold (-40.00 - 150.00): ", -40.00, 150.00);
+
+                Console.WriteLine("Ok, now that you have entered in the thresholds for the alarm system, hit Enter to Activate the alarm!");
+                DisplayContinuePrompt();
+                return (time, lightLowerThreshold, lightUpperThreshold, tempLowerThreshold, tempUpperThreshold);
+            }
         }
+
+        /// <summary>
+        /// Displays the Light Alarm System
+        /// </summary>
+        /// <param name="alarmType">Type of Alarm the user wants to run</param>
+        private static void DisplayLightAlarm(string alarmType)
+        {
+            var values = getMultipleAlarmSystemParams(alarmType);
+            DisplayConsoleUI("Light Alarm System Active");
+            int count = 1;
+            int ambientLight = myFinch.getLeftLightSensor();
+            Console.WriteLine();
+            Console.WriteLine($"Lower Light Threshold = {values.lightLowerThreshold}");
+            Console.WriteLine($"Upper Light Threshold = {values.lightUpperThreshold}");
+            Console.WriteLine($"Ambient Light Reading = {ambientLight}");
+            Console.WriteLine();
+            Console.WriteLine();
+            if (ambientLight > values.lightLowerThreshold && ambientLight < values.lightUpperThreshold && count <= values.time)
+            {
+                while (true)
+                {
+                    int currentLightReading = myFinch.getLeftLightSensor();
+                    Console.Write("\r" + new string(' ', Console.WindowWidth - 1) + "\r");
+                    Console.Write($"Current Light Sensor Value = {currentLightReading}");
+                    myFinch.wait(1000);
+                    count++;
+                    if (currentLightReading < values.lightLowerThreshold || currentLightReading > values.lightUpperThreshold)
+                    {
+                        DisplayConsoleUI("Alarm Triggered!!!!!");
+                        Console.WriteLine();
+                        Console.WriteLine($"Current Light Reading = {currentLightReading}");
+                        Console.WriteLine("Threshold's exceeded. Alarm Triggered");
+                        myFinch.setLED(255, 0, 0);
+                        int buzzer = 5;
+                        for (int i = 0; i < buzzer; i++)
+                        {
+                            myFinch.noteOn(2000);
+                            myFinch.wait(500);
+                            myFinch.noteOff();
+                            myFinch.wait(500);
+                        }
+                        myFinch.setLED(0, 0, 0);
+                        myFinch.noteOff();
+                        break;
+                    }
+                    else if (count >= values.time)
+                    {
+                        DisplayConsoleUI("No Alarm Trigged");
+                        Console.WriteLine("Alarm System has timed out. No events detected!");
+                        myFinch.setLED(0, 255, 0);
+                        myFinch.wait(5000);
+                        myFinch.setLED(0, 0, 0);
+                    }
+                }
+            }
+            else
+            {
+                Console.WriteLine("Sorry, but the ambient light reading is already either lower or higher than the specified Thresholds. Please try again!");
+            }
+        }
+
+        /// <summary>
+        /// Displays the Temp Alarm System
+        /// </summary>
+        /// <param name="alarmType">Type of Alarm the user wants to run</param>
+        private static void DisplayTempAlarm(string alarmType)
+        {
+            var values = getMultipleAlarmSystemParams(alarmType);
+            DisplayConsoleUI("Temp Alarm System Active");
+            int count = 1;
+            double ambientTemp = convertToF(myFinch.getTemperature());
+            Console.WriteLine();
+            Console.WriteLine($"Lower Temp Threshold = {values.tempLowerThreshold}");
+            Console.WriteLine($"Upper Temp Threshold = {values.tempUpperThreshold}");
+            Console.WriteLine($"Ambient Temp Reading = {ambientTemp:F2}");
+            Console.WriteLine();
+            Console.WriteLine();
+            if (ambientTemp > values.tempLowerThreshold && ambientTemp < values.tempUpperThreshold && count <= values.time)
+            {
+                while (true)
+                {
+                    double currentTempReading = convertToF(myFinch.getTemperature());
+                    Console.Write("\r" + new string(' ', Console.WindowWidth - 1) + "\r");
+                    Console.Write($"Current Temp Sensor Value = {currentTempReading:F2}");
+                    myFinch.wait(1000);
+                    count++;
+                    if (currentTempReading < values.tempLowerThreshold || currentTempReading > values.tempUpperThreshold)
+                    {
+                        DisplayConsoleUI("Alarm Triggered!!!!!");
+                        Console.WriteLine();
+                        Console.WriteLine($"Current Temp Reading = {currentTempReading}");
+                        Console.WriteLine("Threshold's exceeded. Alarm Triggered");
+                        myFinch.setLED(255, 0, 0);
+                        int buzzer = 5;
+                        for (int i = 0; i < buzzer; i++)
+                        {
+                            myFinch.noteOn(2000);
+                            myFinch.wait(500);
+                            myFinch.noteOff();
+                            myFinch.wait(500);
+                        }
+                        myFinch.setLED(0, 0, 0);
+                        myFinch.noteOff();
+                        break;
+                    }
+                    else if (count >= values.time)
+                    {
+                        DisplayConsoleUI("No Alarm Trigged");
+                        Console.WriteLine("Alarm System has timed out. No events detected!");
+                        myFinch.setLED(0, 255, 0);
+                        myFinch.wait(5000);
+                        myFinch.setLED(0, 0, 0);
+                    }
+                }
+            }
+            else
+            {
+                Console.WriteLine("Sorry, but the ambient Temp reading is already either lower or higher than the specified Thresholds. Please try again!");
+            }
+        }
+
+        /// <summary>
+        /// Displays both Light and Temp Alarm Systems
+        /// </summary>
+        /// <param name="alarmType">Type of Alarm the user wants to run</param>
+        private static void DisplayBothAlarms(string alarmType)
+        {
+            var values = getMultipleAlarmSystemParams(alarmType);
+            DisplayConsoleUI("Light and Temp Alarm System Active");
+            int count = 1;
+            double ambientTemp = convertToF(myFinch.getTemperature());
+            int ambientLight = myFinch.getLeftLightSensor();
+            Console.WriteLine();
+            Console.WriteLine($"Lower Light Threshold = {values.lightLowerThreshold}");
+            Console.WriteLine($"Upper Light Threshold = {values.lightUpperThreshold}");
+            Console.WriteLine($"Ambient Light Reading = {ambientLight}");
+            Console.WriteLine();
+            Console.WriteLine($"Lower Temp Threshold = {values.tempLowerThreshold}");
+            Console.WriteLine($"Upper Temp Threshold = {values.tempUpperThreshold}");
+            Console.WriteLine($"Ambient Temp Reading = {ambientTemp:F2}");
+            Console.WriteLine();
+            Console.WriteLine();
+            if (ambientLight > values.lightLowerThreshold && ambientLight < values.lightUpperThreshold && ambientTemp > values.tempLowerThreshold && ambientTemp < values.tempUpperThreshold && count <= values.time)
+            {
+                while (true)
+                {
+                    double currentTempReading = convertToF(myFinch.getTemperature());
+                    int currentLightReading = myFinch.getLeftLightSensor();
+                    Console.SetCursorPosition(0, 15);
+                    Console.Write("\r" + new string(' ', Console.WindowWidth - 1) + "\r");
+                    Console.Write($"Current Light Sensor Value = {currentLightReading}");
+                    Console.SetCursorPosition(0, 16);
+                    Console.Write("\r" + new string(' ', Console.WindowWidth - 1) + "\r");
+                    Console.Write($"Current Temp Sensor Value = {currentTempReading:F2}");
+                    myFinch.wait(1000);
+                    count++;
+                    if (currentLightReading < values.lightLowerThreshold || currentLightReading > values.lightUpperThreshold || currentTempReading < values.tempLowerThreshold || currentTempReading > values.tempUpperThreshold)
+                    {
+                        DisplayConsoleUI("Alarm Triggered!!!!!");
+                        Console.WriteLine();
+                        Console.WriteLine($"Current Light Reading = {currentLightReading}");
+                        Console.WriteLine($"Current Temp Reading = {currentTempReading}");
+                        Console.WriteLine("Threshold's exceeded. Alarm Triggered");
+                        myFinch.setLED(255, 0, 0);
+                        int buzzer = 5;
+                        for (int i = 0; i < buzzer; i++)
+                        {
+                            myFinch.noteOn(2000);
+                            myFinch.wait(500);
+                            myFinch.noteOff();
+                            myFinch.wait(500);
+                        }
+                        myFinch.setLED(0, 0, 0);
+                        myFinch.noteOff();
+                        break;
+                    }
+                    else if (count >= values.time)
+                    {
+                        DisplayConsoleUI("No Alarm Trigged");
+                        Console.WriteLine("Alarm System has timed out. No events detected!");
+                        myFinch.setLED(0, 255, 0);
+                        myFinch.wait(5000);
+                        myFinch.setLED(0, 0, 0);
+                    }
+                }
+            }
+            else
+            {
+                Console.WriteLine("Sorry, but the ambient Light or Temp reading is already either lower or higher than the specified Thresholds. Please try again!");
+            }
+        }
+
+        /// <summary>
+        /// Converts the temp from the Finch to Farenheight
+        /// </summary>
+        /// <param name="temp">The temp in C as returned by the Finch</param>
+        /// <returns>Returns the temp converted to Farenheight</returns>
+        private static double convertToF(double temp)
+        {
+            temp = (temp * 1.8) + 32;
+            return temp;
+        }
+
+        #endregion
 
         #endregion
 
@@ -1431,6 +1693,32 @@ namespace FinchTalentShow
                         DisplayContinuePrompt();
                         quit();
                         
+                    }
+                }
+            }
+            return x;
+        }
+
+        private static double isValidDouble(string prompt, double min = 0, double max = 1000)
+        {
+            bool isValidDouble = false;
+            double x = 0;
+            const int MAX_TRIES = 3;
+            int i = 0;
+            while (!isValidDouble && i <= MAX_TRIES)
+            {
+                Console.Write($"{prompt}");
+                isValidDouble = double.TryParse(Console.ReadLine(), out x);
+                if (!isValidDouble || x < min || x > max)
+                {
+                    Console.WriteLine("Sorry, that response isn't valid. Please try again!");
+                    isValidDouble = false;
+                    i++;
+                    if (i > MAX_TRIES)
+                    {
+                        Console.WriteLine("Sorry, but you have tried too many times and failed to put in the correct data. I am exiting the program. Please try again later.");
+                        DisplayContinuePrompt();
+                        quit();
                     }
                 }
             }
