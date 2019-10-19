@@ -1737,7 +1737,9 @@ namespace FinchTalentShow
         {
             bool isValidMenuChoice = false;
             int userResponse = 0;
-            while (!isValidMenuChoice)
+            const int MAX_TRIES = 3;
+            int i = 0;
+            while (!isValidMenuChoice && i <= MAX_TRIES)
             {
                 DisplayConsoleUI($"{screenName}");
                 Console.ForegroundColor = ConsoleColor.Cyan;
@@ -1748,6 +1750,13 @@ namespace FinchTalentShow
                     DisplayConsoleUI("Invalid Option");
                     Console.WriteLine("Sorry, that is not a valid option. Please try again!");
                     isValidMenuChoice = false;
+                    i++;
+                    if (i > MAX_TRIES)
+                    {
+                        Console.WriteLine("Sorry, but you have tried too many times and failed to put in the correct data. I am exiting the program. Please try again later.");
+                        DisplayContinuePrompt();
+                        quit();
+                    }
                     DisplayContinuePrompt();
                 }
             }
