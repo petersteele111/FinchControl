@@ -1,5 +1,6 @@
 ﻿using FinchAPI;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 
 namespace FinchTalentShow
@@ -81,37 +82,51 @@ namespace FinchTalentShow
             Back
         }
 
-        public enum LightAlarmMenu : byte
+        public enum UserControlMenu : byte
         {
-            Infinite = 1,
-            Timed,
+            Parameters = 1,
+            InsertCommands,
+            ViewCommands,
+            ExecuteCommands,
+            Clear,
             Back
         }
 
-        public enum TempAlarmMenu : byte
+        public enum UserControlCommands : byte
         {
-            Infinite = 1,
-            Timed,
-            Back
+            None,
+            MoveForward,
+            MoveBackward,
+            StopMotors,
+            TurnRight,
+            TurnLeft,
+            LEDOn,
+            LEDOff,
+            BuzzerOn,
+            BuzzerOff,
+            Spin,
+            Temp,
+            Light,
+            StarWars,
+            Done
         }
 
         #endregion
 
         #region Main method of the program
 
-        static Finch myFinch = new Finch();
+        readonly static Finch myFinch = new Finch();
 
         /// <summary>
         /// Main Method of the application
         /// </summary>
-        /// <param name="args"></param>
-        static void Main(string[] args)
+        static void Main()
         {
             DisplayWelcomeScreen();
             while (true)
             {
                 DisplayConsoleUI("Finch Control v1.0");
-                getMenuOption(DisplayMainMenu());
+                GetMenuOption(DisplayMainMenu());
             }
         }
 
@@ -172,7 +187,7 @@ namespace FinchTalentShow
             Console.SetCursorPosition(1, 7);
             Console.WriteLine("Thank you for using this program. Until next time!");
             DisplayContinuePrompt();
-            quit();
+            Quit();
         }
 
         #endregion
@@ -181,13 +196,13 @@ namespace FinchTalentShow
 
         #region Main Menu
 
-        
+
         /// <summary>
         /// Generate the main menu for the console
         /// </summary>
         private static int DisplayMainMenu()
         {
-            int userResponse = isValidMenuOption("Finch Control v1.0", @"
+            int userResponse = IsValidMenuOption("Finch Control v1.0", @"
              Menu
 
   1. Connect Finch Robot
@@ -198,7 +213,7 @@ namespace FinchTalentShow
 
   4. Alarm System
 
-  5. User Programming (Under Development)
+  5. User Programming 
 
   6. Disconnect Finch Robot
 
@@ -217,7 +232,7 @@ namespace FinchTalentShow
         /// Performs an action based on the menu option selected
         /// </summary>
         /// <param name="option">Menu option chosen</param>
-        private static void getMenuOption(int option)
+        private static void GetMenuOption(int option)
         {
             Menu menuChoice = (Menu)option;
 
@@ -227,19 +242,17 @@ namespace FinchTalentShow
                     DisplayConnectFinch();
                     break;
                 case Menu.TalentShow:
-                    getTalentShowMenuOption(DisplayTalentShowMenu());
+                    GetTalentShowMenuOption(DisplayTalentShowMenu());
                     break;
                 case Menu.DataRecorder:
-                    getDataRecorderMenuOption(DisplayDataRecorderMenu());
+                    GetDataRecorderMenuOption(DisplayDataRecorderMenu());
                     break;
                 case Menu.AlarmSystem:
-                    getDisplayAlarmSystemMenuOption(DisplayAlarmSystemMenu());
+                    GetDisplayAlarmSystemMenuOption(DisplayAlarmSystemMenu());
                     DisplayContinuePrompt();
                     break;
                 case Menu.UserProgramming:
-                    DisplayConsoleUI("Under Development");
-                    Console.WriteLine("This module is under development");
-                    DisplayContinuePrompt();
+                    DisplayUserControlMenu();
                     break;
                 case Menu.DisconnectFinch:
                     DisplayDisconnectFinch();
@@ -266,7 +279,7 @@ namespace FinchTalentShow
         /// <returns>Returns an int of the menu option chosen</returns>
         private static int DisplayTalentShowMenu()
         {
-            int userResponse = isValidMenuOption("Talent Show Control Menu", @"
+            int userResponse = IsValidMenuOption("Talent Show Control Menu", @"
              Talent Show Menu
 
   1. LED Control
@@ -296,20 +309,20 @@ namespace FinchTalentShow
         /// Performs an action based on the selected Menu item
         /// </summary>
         /// <param name="option">Menu option chosen</param>
-        private static void getTalentShowMenuOption(int option)
+        private static void GetTalentShowMenuOption(int option)
         {
             TalentShowMenu menuOption = (TalentShowMenu)option;
 
             switch (menuOption)
             {
                 case TalentShowMenu.LED:
-                    getLEDMenuOption(DisplayLEDMenu());
+                    GetLEDMenuOption(DisplayLEDMenu());
                     break;
                 case TalentShowMenu.Buzzer:
-                    getBuzzerMenuOption(DisplayBuzzerMenu());
+                    GetBuzzerMenuOption(DisplayBuzzerMenu());
                     break;
                 case TalentShowMenu.Wheels:
-                    getWheelMenuOption(DisplayWheelsMenu());
+                    GetWheelMenuOption(DisplayWheelsMenu());
                     break;
                 case TalentShowMenu.Back:
                     break;
@@ -327,7 +340,7 @@ namespace FinchTalentShow
         /// <returns>Menu Option Chosen</returns>
         private static int DisplayLEDMenu()
         {
-            int userResponse = isValidMenuOption("LED Control Menu", @"
+            int userResponse = IsValidMenuOption("LED Control Menu", @"
              LED Menu
 
   1. LED On
@@ -357,7 +370,7 @@ namespace FinchTalentShow
         /// Performs an action based on the selected Menu item
         /// </summary>
         /// <param name="option">Menu Option chosen</param>
-        private static void getLEDMenuOption(int option)
+        private static void GetLEDMenuOption(int option)
         {
             LEDMenu menuChoice = (LEDMenu)option;
 
@@ -366,8 +379,8 @@ namespace FinchTalentShow
                 case LEDMenu.On:
                     DisplayConnectFinch();
                     DisplayConsoleUI("LED On");
-                    setLEDOn();
-                    setLEDOff();
+                    SetLEDOn();
+                    SetLEDOff();
                     break;
                 case LEDMenu.Blink:
                     DisplayConnectFinch();
@@ -401,7 +414,7 @@ namespace FinchTalentShow
         /// <returns>Returns Menu Option selected</returns>
         private static int DisplayBuzzerMenu()
         {
-            int userResponse = isValidMenuOption("Buzzer Control Menu", @"
+            int userResponse = IsValidMenuOption("Buzzer Control Menu", @"
              Buzzer Menu
 
   1. Buzzer On
@@ -431,7 +444,7 @@ namespace FinchTalentShow
         /// Performs an action based on the selected Menu item
         /// </summary>
         /// <param name="option">Menu Option chosen</param>
-        private static void getBuzzerMenuOption(int option)
+        private static void GetBuzzerMenuOption(int option)
         {
             BuzzerMenu menuChoice = (BuzzerMenu)option;
 
@@ -439,15 +452,15 @@ namespace FinchTalentShow
             {
                 case BuzzerMenu.On:
                     DisplayConnectFinch();
-                    setBuzzerOn();
+                    SetBuzzerOn();
                     break;
                 case BuzzerMenu.StarWars:
                     DisplayConnectFinch();
-                    buzzerStarWars();
+                    BuzzerStarWars();
                     break;
                 case BuzzerMenu.HappyBirthday:
                     DisplayConnectFinch();
-                    buzzerHappyBirthday();
+                    BuzzerHappyBirthday();
                     break;
                 case BuzzerMenu.Back:
                     DisplayTalentShowMenu();
@@ -466,7 +479,7 @@ namespace FinchTalentShow
         /// <returns>Returns menu option selected</returns>
         private static int DisplayWheelsMenu()
         {
-            int userResponse = isValidMenuOption("Wheels Control Menu", @"            
+            int userResponse = IsValidMenuOption("Wheels Control Menu", @"            
              Wheels Menu
 
   1.Forward
@@ -496,7 +509,7 @@ namespace FinchTalentShow
         /// Performs an action based on the selected Menu Item
         /// </summary>
         /// <param name="option">Menu option chosen</param>
-        private static void getWheelMenuOption(int option)
+        private static void GetWheelMenuOption(int option)
         {
             WheelsMenu menuOption = (WheelsMenu)option;
 
@@ -504,19 +517,19 @@ namespace FinchTalentShow
             {
                 case WheelsMenu.Forward:
                     DisplayConnectFinch();
-                    setWheelsForward();
+                    SetWheelsForward();
                     break;
                 case WheelsMenu.Backward:
                     DisplayConnectFinch();
-                    setWheelsBackwards();
+                    SetWheelsBackwards();
                     break;
                 case WheelsMenu.Right:
                     DisplayConnectFinch();
-                    setWheelsRight();
+                    SetWheelsRight();
                     break;
                 case WheelsMenu.Left:
                     DisplayConnectFinch();
-                    setWheelsLeft();
+                    SetWheelsLeft();
                     break;
                 case WheelsMenu.Back:
                     DisplayTalentShowMenu();
@@ -539,7 +552,7 @@ namespace FinchTalentShow
         /// <returns>Returns user option for menu</returns>
         private static int DisplayDataRecorderMenu()
         {
-            int userResponse = isValidMenuOption("Data Recorder Control Menu", @"
+            int userResponse = IsValidMenuOption("Data Recorder Control Menu", @"
              Data Recorder Menu
   
   1. Light Sensor Control
@@ -569,17 +582,17 @@ namespace FinchTalentShow
         /// Gets the Menu option for the Data Recorder Menu
         /// </summary>
         /// <param name="option">User selected option for the menu</param>
-        private static void getDataRecorderMenuOption(int option)
+        private static void GetDataRecorderMenuOption(int option)
         {
             DataRedcorderMenu menuOption = (DataRedcorderMenu)option;
 
             switch (menuOption)
             {
                 case DataRedcorderMenu.Light:
-                    getLightSensorMenuOption(DisplayLightSensorMenu());
+                    GetLightSensorMenuOption(DisplayLightSensorMenu());
                     break;
                 case DataRedcorderMenu.Temp:
-                    getTempSensorMenuOption(DisplayTempSensorMenu());
+                    GetTempSensorMenuOption(DisplayTempSensorMenu());
                     break;
                 case DataRedcorderMenu.Back:
                     DisplayDataRecorderMenu();
@@ -593,12 +606,12 @@ namespace FinchTalentShow
         }
 
         /// <summary>
-        /// Displays the Light Sensor Menu
+        /// Display the Light Sensor Menu
         /// </summary>
         /// <returns>Returns the user option for the menu</returns>
         private static int DisplayLightSensorMenu()
         {
-            int userResponse = isValidMenuOption("Light Sensor Menu", @"
+            int userResponse = IsValidMenuOption("Light Sensor Menu", @"
              Light Sensor
 
   1. Get Light Sensor Data
@@ -624,7 +637,11 @@ namespace FinchTalentShow
             return userResponse;
         }
 
-        private static void getLightSensorMenuOption(int option)
+        /// <summary>
+        /// Get Light Sensor Menu User Choice
+        /// </summary>
+        /// <param name="option">users menu choice</param>
+        private static void GetLightSensorMenuOption(int option)
         {
             LightSensorMenu menuOption = (LightSensorMenu)option;
 
@@ -632,14 +649,14 @@ namespace FinchTalentShow
             {
                 case LightSensorMenu.Light:
                     DisplayConnectFinch();
-                    DisplayLightSensorData(getLightSensorData());
+                    DisplayLightSensorData(GetLightSensorData());
                     break;
                 case LightSensorMenu.Average:
                     DisplayConnectFinch();
-                    DisplayLightSensorDataAverage(getLightSensorData());
+                    DisplayLightSensorDataAverage(GetLightSensorData());
                     break;
                 case LightSensorMenu.Back:
-                    getDataRecorderMenuOption(DisplayDataRecorderMenu());
+                    GetDataRecorderMenuOption(DisplayDataRecorderMenu());
                     break;
                 default:
                     DisplayConsoleUI("Invlaid Response");
@@ -649,9 +666,13 @@ namespace FinchTalentShow
             }
         }
 
+        /// <summary>
+        /// Display the Temp Sensor Menu
+        /// </summary>
+        /// <returns>Retuns user menu choice</returns>
         private static int DisplayTempSensorMenu()
         {
-            int userResponse = isValidMenuOption("Temperature Sensor Menu", @"
+            int userResponse = IsValidMenuOption("Temperature Sensor Menu", @"
              Temperature Sensor
 
   1. Get Temperature Sensor Data
@@ -677,7 +698,11 @@ namespace FinchTalentShow
             return userResponse;
         }
 
-        private static void getTempSensorMenuOption(int option)
+        /// <summary>
+        /// Get Temp Sensor Menu User Choice
+        /// </summary>
+        /// <param name="option">users menu choice</param>
+        private static void GetTempSensorMenuOption(int option)
         {
             TempSensorMenu menuChoice = (TempSensorMenu)option;
 
@@ -708,7 +733,7 @@ namespace FinchTalentShow
         /// <returns>Returns the menu choice chosen by the user</returns>
         private static int DisplayAlarmSystemMenu()
         {
-            int userResponse = isValidMenuOption("Alarm System Menu", @"
+            int userResponse = IsValidMenuOption("Alarm System Menu", @"
 
              Alarm System Menu
 
@@ -738,7 +763,7 @@ namespace FinchTalentShow
         /// Performs an action based on the menu option selected
         /// </summary>
         /// <param name="option">Menu Option Chosen</param>
-        private static void getDisplayAlarmSystemMenuOption(int option)
+        private static void GetDisplayAlarmSystemMenuOption(int option)
         {
             string alarmType;
             AlarmSystemMenu menuChoice = (AlarmSystemMenu)option;
@@ -761,7 +786,7 @@ namespace FinchTalentShow
                     DisplayBothAlarms(alarmType);
                     break;
                 case AlarmSystemMenu.Back:
-                    getMenuOption(DisplayMainMenu());
+                    GetMenuOption(DisplayMainMenu());
                     break;
                 default:
                     DisplayConsoleUI("Invlaid Response");
@@ -773,6 +798,80 @@ namespace FinchTalentShow
 
         #endregion
 
+        #region User Control Menus
+
+        /// <summary>
+        /// Displays the User Control Menu
+        /// </summary>
+        /// <returns>Returns the users menu choice</returns>
+        private static void DisplayUserControlMenu()
+        {
+            List<UserControlCommands> commands = new List<UserControlCommands>();
+            (int wheelSpeed, int r, int g, int b, int hertz) userControlParams;
+            userControlParams.wheelSpeed = 0;
+            userControlParams.r = 0;
+            userControlParams.g = 0;
+            userControlParams.b = 0;
+            userControlParams.hertz = 0;
+
+            bool back = false;
+            do
+            {
+                int userResponse = IsValidMenuOption("User Control Menu", @"
+
+             User Control Menu
+
+  1. Input Parameters
+
+  2. Insert Commands
+
+  3. View Commands
+
+  4. Execute Commands
+
+  5. Clear Commands (Reset)
+
+  6. Back
+
+
+
+
+
+
+
+  Option (1-4): ", 1, 6);
+                UserControlMenu menuChoice = (UserControlMenu)userResponse;
+                switch (menuChoice)
+                {
+                    case UserControlMenu.Parameters:
+                        userControlParams = GetUserControlParams();
+                        break;
+                    case UserControlMenu.InsertCommands:
+                        commands = DisplayUserControlCommands(commands);
+                        break;
+                    case UserControlMenu.ViewCommands:
+                        ViewUserControlCommandsInput(commands);
+                        break;
+                    case UserControlMenu.ExecuteCommands:
+                        DisplayConnectFinch();
+                        ExecuteUserControlCommands(commands, userControlParams);
+                        break;
+                    case UserControlMenu.Clear:
+                        commands = ClearUserControlCommandList(commands);
+                        break;
+                    case UserControlMenu.Back:
+                        back = true;
+                        break;
+                    default:
+                        DisplayConsoleUI("Invlaid Response");
+                        Console.WriteLine("Sorry I don't understand your response, please try again.");
+                        DisplayContinuePrompt();
+                        break;
+                }
+            } while (!back);
+        }
+        #endregion
+
         #endregion
 
         #region Control Systems
@@ -781,20 +880,15 @@ namespace FinchTalentShow
 
         #region LED Control
         /// <summary>
-        /// Get's the LED parameters and passes it to the setLEDOn Method
+        /// Get's the LED parameters and passes it to the SetLEDOn Method
         /// </summary>
-        private static (int r, int g, int b, int time) getLEDParams()
+        private static (int r, int g, int b, int time) GetLEDParams()
         {
-            int r = 0;
-            int g = 0;
-            int b = 0;
-            int time = 0;
-
             DisplayConsoleUI("Set LED Parameters");
-            r = isValidInt("Enter value for Red LED (0-255): ", 0, 255);
-            g = isValidInt("Enter Value for Green LED (0-255): ", 0, 255);
-            b = isValidInt("Enter Value for Blue LED (0-255): ", 0, 255);
-            time = isValidInt("Enter Value for Time (ms): ", 0, 100000);
+            int r = IsValidInt("Enter value for Red LED (0-255): ", 0, 255);
+            int g = IsValidInt("Enter Value for Green LED (0-255): ", 0, 255);
+            int b = IsValidInt("Enter Value for Blue LED (0-255): ", 0, 255);
+            int time = IsValidInt("Enter Value for Time (ms): ", 0, 100000);
             return (r, g, b, time);
         }
 
@@ -802,12 +896,12 @@ namespace FinchTalentShow
         /// Prompts the user for the LED Parameters and time to turn the LED on
         /// Turns the LED on for the specified color and time set by the user
         /// </summary>
-        private static void setLEDOn()
+        private static void SetLEDOn()
         {
-            var values = getLEDParams();
+            var (r, g, b, time) = GetLEDParams();
 
-            myFinch.setLED(values.r, values.g, values.b);
-            myFinch.wait(values.time);
+            myFinch.setLED(r, g, b);
+            myFinch.wait(time);
         }
 
         /// <summary>
@@ -817,7 +911,7 @@ namespace FinchTalentShow
         /// <param name="g"></param>
         /// <param name="b"></param>
         /// <param name="time"></param>
-        private static void setLEDOn(int r = 255, int g = 255, int b = 255, int time = 1000)
+        private static void SetLEDOn(int r = 255, int g = 255, int b = 255, int time = 1000)
         {
             myFinch.setLED(r, g, b);
             myFinch.wait(time);
@@ -828,7 +922,7 @@ namespace FinchTalentShow
         /// Turns the LED off
         /// </summary>
         /// <param name="time">Specifies the wait time for the LED to be off. Used for blinking the LED</param>
-        private static void setLEDOff(int time = 500)
+        private static void SetLEDOff(int time = 500)
         {
             myFinch.setLED(0, 0, 0);
             myFinch.wait(time);
@@ -839,7 +933,7 @@ namespace FinchTalentShow
         /// </summary>
         private static void LEDBlink()
         {
-            var values = getLEDParams();
+            var (r, g, b, time) = GetLEDParams();
 
             Console.Write("Enter the number of blinks, 0 is infinite: ");
             int.TryParse(Console.ReadLine(), out int numberOfBlinks);
@@ -847,16 +941,16 @@ namespace FinchTalentShow
             {
                 while (true)
                 {
-                    setLEDOn(values.r, values.g, values.b, values.time);
-                    setLEDOff();
+                    SetLEDOn(r, g, b, time);
+                    SetLEDOff();
                 }
             }
             else
             {
                 for (int i = 0; i < numberOfBlinks; i++)
                 {
-                    setLEDOn(values.r, values.g, values.b, values.time);
-                    setLEDOff();
+                    SetLEDOn(r, g, b, time);
+                    SetLEDOff();
                 }
             }
         }
@@ -867,14 +961,14 @@ namespace FinchTalentShow
         private static void ShowMultipleLED()
         {
 
-            setLEDOn(255, 255, 255, 1000);
-            setLEDOff(500);
-            setLEDOn(255, 0, 0, 500);
-            setLEDOff(500);
-            setLEDOn(0, 255, 0, 2000);
-            setLEDOff(500);
-            setLEDOn(0, 0, 255, 1500);
-            setLEDOff(500);
+            SetLEDOn(255, 255, 255, 1000);
+            SetLEDOff(500);
+            SetLEDOn(255, 0, 0, 500);
+            SetLEDOff(500);
+            SetLEDOn(0, 255, 0, 2000);
+            SetLEDOff(500);
+            SetLEDOn(0, 0, 255, 1500);
+            SetLEDOff(500);
         }
 
         /// <summary>
@@ -884,29 +978,29 @@ namespace FinchTalentShow
         {
             for (int i = 0; i < 255; i++)
             {
-                setLEDOn(i, 0, 0, 1);
+                SetLEDOn(i, 0, 0, 1);
             }
             for (int i = 255; i >= 0; i--)
             {
-                setLEDOn(i, 0, 0, 1);
+                SetLEDOn(i, 0, 0, 1);
             }
 
             for (int i = 0; i < 255; i++)
             {
-                setLEDOn(0, i, 0, 1);
+                SetLEDOn(0, i, 0, 1);
             }
             for (int i = 255; i >= 0; i--)
             {
-                setLEDOn(0, i, 0, 1);
+                SetLEDOn(0, i, 0, 1);
             }
 
             for (int i = 0; i < 255; i++)
             {
-                setLEDOn(0, 0, i, 1);
+                SetLEDOn(0, 0, i, 1);
             }
             for (int i = 255; i >= 0; i--)
             {
-                setLEDOn(0, 0, i, 1);
+                SetLEDOn(0, 0, i, 1);
             }
         }
 
@@ -918,25 +1012,23 @@ namespace FinchTalentShow
         /// Gets Buzzer Parameters
         /// </summary>
         /// <returns>Returns Tuple of parameters</returns>
-        private static (int hertz, int time) getBuzzerParams()
+        private static (int hertz, int time) GetBuzzerParams()
         {
-            int hertz = 0;
-            int time = 0;
             DisplayConsoleUI("Get Buzzer Parameters");
-            hertz = isValidInt("Please enter the Frequency of the Buzzer (hertz): ", 0, 22000);
-            time = isValidInt("Please enter the length of time for the Buzzer to be on (ms): ", 0, 100000);
+            int hertz = IsValidInt("Please enter the Frequency of the Buzzer (hertz): ", 0, 22000);
+            int time = IsValidInt("Please enter the length of time for the Buzzer to be on (ms): ", 0, 100000);
             return (hertz, time);
         }
 
         /// <summary>
         /// Sets the buzzer to on based on the user specified parameters
         /// </summary>
-        private static void setBuzzerOn()
+        private static void SetBuzzerOn()
         {
-            var values = getBuzzerParams();
+            var (hertz, time) = GetBuzzerParams();
 
-            myFinch.noteOn(values.hertz);
-            myFinch.wait(values.time);
+            myFinch.noteOn(hertz);
+            myFinch.wait(time);
             myFinch.noteOff();
         }
 
@@ -945,7 +1037,7 @@ namespace FinchTalentShow
         /// </summary>
         /// <param name="hertz">Tone generated in hertz</param>
         /// <param name="time">Time to play tone</param>
-        private static void setBuzzerOn(int hertz, int time)
+        private static void SetBuzzerOn(int hertz, int time)
         {
             myFinch.noteOn(hertz);
             myFinch.wait(time);
@@ -955,82 +1047,82 @@ namespace FinchTalentShow
         /// <summary>
         /// Plays Star Wars Song
         /// </summary>
-        private static void buzzerStarWars()
+        private static void BuzzerStarWars()
         {
-            setBuzzerOn(300, 500);
+            SetBuzzerOn(300, 500);
             myFinch.wait(50);
-            setBuzzerOn(300, 500);
+            SetBuzzerOn(300, 500);
             myFinch.wait(50);
-            setBuzzerOn(300, 500);
+            SetBuzzerOn(300, 500);
             myFinch.wait(50);
-            setBuzzerOn(250, 500);
+            SetBuzzerOn(250, 500);
             myFinch.wait(50);
-            setBuzzerOn(350, 250);
-            setBuzzerOn(300, 500);
+            SetBuzzerOn(350, 250);
+            SetBuzzerOn(300, 500);
             myFinch.wait(50);
-            setBuzzerOn(250, 500);
+            SetBuzzerOn(250, 500);
             myFinch.wait(50);
-            setBuzzerOn(350, 250);
-            setBuzzerOn(300, 500);
+            SetBuzzerOn(350, 250);
+            SetBuzzerOn(300, 500);
             myFinch.wait(50);
         }
 
         /// <summary>
         /// Plays Happy Birthday
         /// </summary>
-        private static void buzzerHappyBirthday()
+        private static void BuzzerHappyBirthday()
         {
-            setBuzzerOn(264, 125);
+            SetBuzzerOn(264, 125);
             myFinch.wait(250);
-            setBuzzerOn(264, 125);
+            SetBuzzerOn(264, 125);
             myFinch.wait(125);
-            setBuzzerOn(297, 500);
+            SetBuzzerOn(297, 500);
             myFinch.wait(125);
-            setBuzzerOn(264, 500);
+            SetBuzzerOn(264, 500);
             myFinch.wait(125);
-            setBuzzerOn(352, 500);
+            SetBuzzerOn(352, 500);
             myFinch.wait(125);
-            setBuzzerOn(330, 1000);
+            SetBuzzerOn(330, 1000);
             myFinch.wait(250);
-            setBuzzerOn(264, 125);
+            SetBuzzerOn(264, 125);
             myFinch.wait(250);
-            setBuzzerOn(264, 125);
+            SetBuzzerOn(264, 125);
             myFinch.wait(125);
-            setBuzzerOn(297, 500);
+            SetBuzzerOn(297, 500);
             myFinch.wait(125);
-            setBuzzerOn(264, 500);
+            SetBuzzerOn(264, 500);
             myFinch.wait(125);
-            setBuzzerOn(396, 500);
+            SetBuzzerOn(396, 500);
             myFinch.wait(125);
-            setBuzzerOn(352, 1000);
+            SetBuzzerOn(352, 1000);
             myFinch.wait(250);
-            setBuzzerOn(264, 125);
+            SetBuzzerOn(264, 125);
             myFinch.wait(250);
-            setBuzzerOn(264, 125);
+            SetBuzzerOn(264, 125);
             myFinch.wait(125);
-            setBuzzerOn(2642, 500);
+            SetBuzzerOn(2642, 500);
             myFinch.wait(125);
-            setBuzzerOn(440, 500);
+            SetBuzzerOn(440, 500);
             myFinch.wait(125);
-            setBuzzerOn(352, 250);
+            SetBuzzerOn(352, 250);
             myFinch.wait(125);
-            setBuzzerOn(352, 125);
+            SetBuzzerOn(352, 125);
             myFinch.wait(125);
-            setBuzzerOn(330, 500);
+            SetBuzzerOn(330, 500);
             myFinch.wait(125);
-            setBuzzerOn(297, 1000);
+            SetBuzzerOn(297, 1000);
             myFinch.wait(250);
-            setBuzzerOn(466, 125);
+            SetBuzzerOn(466, 125);
             myFinch.wait(250);
-            setBuzzerOn(466, 125);
+            SetBuzzerOn(466, 125);
             myFinch.wait(125);
-            setBuzzerOn(440, 500);
+            SetBuzzerOn(440, 500);
             myFinch.wait(125);
-            setBuzzerOn(352, 500);
+            SetBuzzerOn(352, 500);
             myFinch.wait(125);
-            setBuzzerOn(396, 500);
+            SetBuzzerOn(396, 500);
             myFinch.wait(125);
-            setBuzzerOn(352, 1000);
+            SetBuzzerOn(352, 1000);
         }
 
         #endregion
@@ -1041,15 +1133,12 @@ namespace FinchTalentShow
         /// Gets Wheel Parameters
         /// </summary>
         /// <returns>Returns a tuple for wheel parameters</returns>
-        private static (int left, int right, int time) getWheelsParams()
+        private static (int left, int right, int time) GetWheelsParams()
         {
-            int left = 0;
-            int right = 0;
-            int time = 0;
             DisplayConsoleUI("Set Wheel Parameters");
-            left = isValidInt("Enter the speed of the Left Wheel (0-255): ", 0, 255);
-            right = isValidInt("Enter the speed of the Right Wheel (0-255)", 0, 255);
-            time = isValidInt("Enter the time for the Finch Robot to Drive (ms): ", 0, 100000);
+            int left = IsValidInt("Enter the speed of the Left Wheel (0-255): ", 0, 255);
+            int right = IsValidInt("Enter the speed of the Right Wheel (0-255)", 0, 255);
+            int time = IsValidInt("Enter the time for the Finch Robot to Drive (ms): ", 0, 100000);
 
             return (left, right, time);
         }
@@ -1057,31 +1146,31 @@ namespace FinchTalentShow
         /// <summary>
         /// Sets the wheels to move forward based on user defined parameters
         /// </summary>
-        private static void setWheelsForward()
+        private static void SetWheelsForward()
         {
-            var values = getWheelsParams();
+            var (left, right, time) = GetWheelsParams();
 
-            myFinch.setMotors(values.left, values.right);
-            myFinch.wait(values.time);
+            myFinch.setMotors(left, right);
+            myFinch.wait(time);
             myFinch.setMotors(0, 0);
         }
 
         /// <summary>
         /// Sets the wheels to move backwards based on user parameters
         /// </summary>
-        private static void setWheelsBackwards()
+        private static void SetWheelsBackwards()
         {
-            var values = getWheelsParams();
+            var (left, right, time) = GetWheelsParams();
 
-            myFinch.setMotors(-values.left, -values.right);
-            myFinch.wait(values.time);
+            myFinch.setMotors(-left, -right);
+            myFinch.wait(time);
             myFinch.setMotors(0, 0);
         }
 
         /// <summary>
         /// Sets the wheels to turn right based on hardcoded parameters
         /// </summary>
-        private static void setWheelsRight()
+        private static void SetWheelsRight()
         {
             myFinch.setMotors(0, 100);
             myFinch.wait(1000);
@@ -1091,7 +1180,7 @@ namespace FinchTalentShow
         /// <summary>
         /// Sets the wheels to turn left based on hardcoded parameters
         /// </summary>
-        private static void setWheelsLeft()
+        private static void SetWheelsLeft()
         {
             myFinch.setMotors(100, 0);
             myFinch.wait(1000);
@@ -1108,12 +1197,12 @@ namespace FinchTalentShow
         /// Get the Light Sensor Data Parameters
         /// </summary>
         /// <returns>Returns a tuple of the Light Sensor Parameters</returns>
-        private static (int time, int dataPoints) getLightSensorParams()
+        private static (int time, int dataPoints) GetLightSensorParams()
         {
             DisplayConsoleUI("Get Light Sensor Parameters");
             Console.ForegroundColor = ConsoleColor.Green;
-            int time = isValidInt("Please enter the Frequency you wish to collect Sensor Data (seconds): ", 1, 100000);
-            int dataPoints = isValidInt("Please enter the amount of Data Points you wish to collect: ", 1, 100000);
+            int time = IsValidInt("Please enter the Frequency you wish to collect Sensor Data (seconds): ", 1, 100000);
+            int dataPoints = IsValidInt("Please enter the amount of Data Points you wish to collect: ", 1, 100000);
             Console.WriteLine();
             Console.WriteLine($"Gathering the Data. Time until completion: {(double)(time * dataPoints) / 60:F1} mins");
             return (time, dataPoints);
@@ -1123,15 +1212,15 @@ namespace FinchTalentShow
         /// Get the Light Sensor Data
         /// </summary>
         /// <returns>Returns Multidimensional Array of Left and Right Light Sensor Readings</returns>
-        private static int[][] getLightSensorData()
+        private static int[][] GetLightSensorData()
         {
-            var values = getLightSensorParams();
+            var (dataPoints, time) = GetLightSensorParams();
 
-            int[][] sensorData = new int[values.dataPoints][];
-            for (int i = 0; i < values.dataPoints; i++)
+            int[][] sensorData = new int[dataPoints][];
+            for (int i = 0; i < dataPoints; i++)
             {
                 sensorData[i] = myFinch.getLightSensors();
-                myFinch.wait(values.time * 1000);
+                myFinch.wait(time * 1000);
             }
             return sensorData;
         }
@@ -1199,12 +1288,12 @@ namespace FinchTalentShow
         /// Get the Parameters for the Temp Sensor Data
         /// </summary>
         /// <returns>Returns a Tuple for Frequency and Data Points</returns>
-        private static (int time, int dataPoints) getTempSensorParams()
+        private static (int time, int dataPoints) GetTempSensorParams()
         {
             DisplayConsoleUI("Get Temp Sensor Parameters");
             Console.ForegroundColor = ConsoleColor.Green;
-            int time = isValidInt("Please enter the Frequency you wish to collect Sensor Data (seconds): ", 1, 100000);
-            int dataPoints = isValidInt("Please enter the amount of Data Points you wish to collect: ", 1, 100000);
+            int time = IsValidInt("Please enter the Frequency you wish to collect Sensor Data (seconds): ", 1, 100000);
+            int dataPoints = IsValidInt("Please enter the amount of Data Points you wish to collect: ", 1, 100000);
             Console.WriteLine();
             Console.WriteLine($"Gathering the Data. Time until completion: {(double)(time * dataPoints) / 60:F1} mins");
             return (time, dataPoints);
@@ -1214,19 +1303,19 @@ namespace FinchTalentShow
         /// Gets the Temperature Sensor Data
         /// </summary>
         /// <returns>Returns tuple with double array of sensorData and bool for Farenheight to Celcius</returns>
-        private static (double[] sensorData, bool CtoFa) getTempSensorData()
+        private static (double[] sensorData, bool CtoFa) GetTempSensorData()
         {
-            var values = getTempSensorParams();
+            var (dataPoints, time) = GetTempSensorParams();
             bool CtoFa = CtoF();
-            double[] sensorData = new double[values.dataPoints];
-            for (int i = 0; i < values.dataPoints; i++)
+            double[] sensorData = new double[dataPoints];
+            for (int i = 0; i < dataPoints; i++)
             {
                 sensorData[i] = myFinch.getTemperature();
-                myFinch.wait(values.time * 1000);
+                myFinch.wait(time * 1000);
             }
             if (CtoFa)
             {
-                sensorData = convertCtoF(sensorData);
+                sensorData = ConvertCtoF(sensorData);
             }
             return (sensorData, CtoFa);
         }
@@ -1236,9 +1325,9 @@ namespace FinchTalentShow
         /// </summary>
         private static void DisplayTempSensorData()
         {
-            var values = getTempSensorData();
+            var (sensorData, CtoFa) = GetTempSensorData();
 
-            bool CtoF = values.CtoFa;
+            bool CtoF = CtoFa;
             string tempFormat;
 
             if (CtoF)
@@ -1250,24 +1339,24 @@ namespace FinchTalentShow
                 tempFormat = "°C";
             }
 
-            DisplayConsoleUI("Temperature Sensor Data", (values.sensorData.Length) + 7);
+            DisplayConsoleUI("Temperature Sensor Data", (sensorData.Length) + 7);
             Console.SetCursorPosition(0, 5);
             Console.WriteLine("Temperature Sensor Data");
             Console.WriteLine();
-            for (int i = 0; i < values.sensorData.Length; i++)
+            for (int i = 0; i < sensorData.Length; i++)
             {
-                if (values.sensorData.Length < 9)
+                if (sensorData.Length < 9)
                 {
-                    Console.WriteLine($"Data Point #{i + 1} {values.sensorData[i]:F2}{tempFormat}");
+                    Console.WriteLine($"Data Point #{i + 1} {sensorData[i]:F2}{tempFormat}");
                 }
                 else
                 {
                     while (i < 9)
                     {
-                        Console.WriteLine($"Data Point # {i + 1} {values.sensorData[i]:F2}{tempFormat}");
+                        Console.WriteLine($"Data Point # {i + 1} {sensorData[i]:F2}{tempFormat}");
                         i++;
                     }
-                    Console.WriteLine($"Data Point #{i + 1} {values.sensorData[i]:F2}{tempFormat}");
+                    Console.WriteLine($"Data Point #{i + 1} {sensorData[i]:F2}{tempFormat}");
                 }
             }
             DisplayContinuePrompt();
@@ -1308,7 +1397,7 @@ namespace FinchTalentShow
         /// </summary>
         /// <param name="sensorData">Double Array of temperature sensor data</param>
         /// <returns>Returns converted Double Array of temperature data in Farenheight</returns>
-        private static double[] convertCtoF(double[] sensorData)
+        private static double[] ConvertCtoF(double[] sensorData)
         {
             double[] convertedSensorData = new double[sensorData.Length];
             for (int i = 0; i < sensorData.Length; i++)
@@ -1327,18 +1416,18 @@ namespace FinchTalentShow
         /// </summary>
         /// <param name="alarmType">Type of Alarm the user wants to run</param>
         /// <returns>Returns a tuple with the alarm parameters</returns>
-        private static (int time, int lightLowerThreshold, int lightUpperThreshold, double tempLowerThreshold, double tempUpperThreshold) getMultipleAlarmSystemParams(string alarmType)
+        private static (int time, int lightLowerThreshold, int lightUpperThreshold, double tempLowerThreshold, double tempUpperThreshold) GetMultipleAlarmSystemParams(string alarmType)
         {
             DisplayConsoleUI("Get Both Light and Temp Alarm System Parameters");
             int lightLowerThreshold = 0;
             int lightUpperThreshold = 0;
             double tempLowerThreshold = 0;
             double tempUpperThreshold = 0;
-            int time = isValidInt("Please enter the time (seconds) you wish to run this monitoring system: ", 1, 100000);
+            int time = IsValidInt("Please enter the time (seconds) you wish to run this monitoring system: ", 1, 100000);
             if (alarmType.Equals("light"))
             {
-                lightLowerThreshold = isValidInt("Please enter the lower light sensor threshhold (0-255): ", 0, 255);
-                lightUpperThreshold = isValidInt("Please enter the upper light sensor threshold (0-255): ", 0, 255);
+                lightLowerThreshold = IsValidInt("Please enter the lower light sensor threshhold (0-255): ", 0, 255);
+                lightUpperThreshold = IsValidInt("Please enter the upper light sensor threshold (0-255): ", 0, 255);
 
                 Console.WriteLine("Ok, now that you have entered in the thresholds for the alarm system, hit Enter to Activate the alarm!");
                 DisplayContinuePrompt();
@@ -1346,8 +1435,8 @@ namespace FinchTalentShow
             }
             else if (alarmType.Equals("temp"))
             {
-                tempLowerThreshold = isValidDouble("Please enter the lower temp sensor threshold (-40.00 - 150.00): ", -40.00, 150.00);
-                tempUpperThreshold = isValidDouble("Please eneter the upper temp sensor threshold (-40.00 - 150.00): ", -40.00, 150.00);
+                tempLowerThreshold = IsValidDouble("Please enter the lower temp sensor threshold (-40.00 - 150.00): ", -40.00, 150.00);
+                tempUpperThreshold = IsValidDouble("Please eneter the upper temp sensor threshold (-40.00 - 150.00): ", -40.00, 150.00);
 
                 Console.WriteLine("Ok, now that you have entered in the thresholds for the alarm system, hit Enter to Activate the alarm!");
                 DisplayContinuePrompt();
@@ -1355,10 +1444,10 @@ namespace FinchTalentShow
             }
             else
             {
-                lightLowerThreshold = isValidInt("Please enter the lower light sensor threshhold (0-255): ", 0, 255);
-                lightUpperThreshold = isValidInt("Please enter the upper light sensor threshold (0-255): ", 0, 255);
-                tempLowerThreshold = isValidDouble("Please enter the lower temp sensor threshold (-40.00 - 150.00): ", -40.00, 150.00);
-                tempUpperThreshold = isValidDouble("Please eneter the upper temp sensor threshold (-40.00 - 150.00): ", -40.00, 150.00);
+                lightLowerThreshold = IsValidInt("Please enter the lower light sensor threshhold (0-255): ", 0, 255);
+                lightUpperThreshold = IsValidInt("Please enter the upper light sensor threshold (0-255): ", 0, 255);
+                tempLowerThreshold = IsValidDouble("Please enter the lower temp sensor threshold (-40.00 - 150.00): ", -40.00, 150.00);
+                tempUpperThreshold = IsValidDouble("Please eneter the upper temp sensor threshold (-40.00 - 150.00): ", -40.00, 150.00);
 
                 Console.WriteLine("Ok, now that you have entered in the thresholds for the alarm system, hit Enter to Activate the alarm!");
                 DisplayContinuePrompt();
@@ -1372,17 +1461,17 @@ namespace FinchTalentShow
         /// <param name="alarmType">Type of Alarm the user wants to run</param>
         private static void DisplayLightAlarm(string alarmType)
         {
-            var values = getMultipleAlarmSystemParams(alarmType);
+            var (time, lightLowerThreshold, lightUpperThreshold, _, _) = GetMultipleAlarmSystemParams(alarmType); //Using Discards for data I don't need
             DisplayConsoleUI("Light Alarm System Active");
             int count = 1;
             int ambientLight = myFinch.getLeftLightSensor();
             Console.WriteLine();
-            Console.WriteLine($"Lower Light Threshold = {values.lightLowerThreshold}");
-            Console.WriteLine($"Upper Light Threshold = {values.lightUpperThreshold}");
+            Console.WriteLine($"Lower Light Threshold = {lightLowerThreshold}");
+            Console.WriteLine($"Upper Light Threshold = {lightUpperThreshold}");
             Console.WriteLine($"Ambient Light Reading = {ambientLight}");
             Console.WriteLine();
             Console.WriteLine();
-            if (ambientLight > values.lightLowerThreshold && ambientLight < values.lightUpperThreshold && count <= values.time)
+            if (ambientLight > lightLowerThreshold && ambientLight < lightUpperThreshold && count <= time)
             {
                 while (true)
                 {
@@ -1391,7 +1480,7 @@ namespace FinchTalentShow
                     Console.Write($"Current Light Sensor Value = {currentLightReading}");
                     myFinch.wait(1000);
                     count++;
-                    if (currentLightReading < values.lightLowerThreshold || currentLightReading > values.lightUpperThreshold)
+                    if (currentLightReading < lightLowerThreshold || currentLightReading > lightUpperThreshold)
                     {
                         DisplayConsoleUI("Alarm Triggered!!!!!");
                         Console.WriteLine();
@@ -1410,7 +1499,7 @@ namespace FinchTalentShow
                         myFinch.noteOff();
                         break;
                     }
-                    else if (count >= values.time)
+                    else if (count >= time)
                     {
                         DisplayConsoleUI("No Alarm Trigged");
                         Console.WriteLine("Alarm System has timed out. No events detected!");
@@ -1432,26 +1521,26 @@ namespace FinchTalentShow
         /// <param name="alarmType">Type of Alarm the user wants to run</param>
         private static void DisplayTempAlarm(string alarmType)
         {
-            var values = getMultipleAlarmSystemParams(alarmType);
+            var (time, _, _, tempLowerThreshold, tempUpperThreshold) = GetMultipleAlarmSystemParams(alarmType);
             DisplayConsoleUI("Temp Alarm System Active");
             int count = 1;
-            double ambientTemp = convertToF(myFinch.getTemperature());
+            double ambientTemp = ConvertToF(myFinch.getTemperature());
             Console.WriteLine();
-            Console.WriteLine($"Lower Temp Threshold = {values.tempLowerThreshold}");
-            Console.WriteLine($"Upper Temp Threshold = {values.tempUpperThreshold}");
+            Console.WriteLine($"Lower Temp Threshold = {tempLowerThreshold}");
+            Console.WriteLine($"Upper Temp Threshold = {tempUpperThreshold}");
             Console.WriteLine($"Ambient Temp Reading = {ambientTemp:F2}");
             Console.WriteLine();
             Console.WriteLine();
-            if (ambientTemp > values.tempLowerThreshold && ambientTemp < values.tempUpperThreshold && count <= values.time)
+            if (ambientTemp > tempLowerThreshold && ambientTemp < tempUpperThreshold && count <= time)
             {
                 while (true)
                 {
-                    double currentTempReading = convertToF(myFinch.getTemperature());
+                    double currentTempReading = ConvertToF(myFinch.getTemperature());
                     Console.Write("\r" + new string(' ', Console.WindowWidth - 1) + "\r");
                     Console.Write($"Current Temp Sensor Value = {currentTempReading:F2}");
                     myFinch.wait(1000);
                     count++;
-                    if (currentTempReading < values.tempLowerThreshold || currentTempReading > values.tempUpperThreshold)
+                    if (currentTempReading < tempLowerThreshold || currentTempReading > tempUpperThreshold)
                     {
                         DisplayConsoleUI("Alarm Triggered!!!!!");
                         Console.WriteLine();
@@ -1470,7 +1559,7 @@ namespace FinchTalentShow
                         myFinch.noteOff();
                         break;
                     }
-                    else if (count >= values.time)
+                    else if (count >= time)
                     {
                         DisplayConsoleUI("No Alarm Trigged");
                         Console.WriteLine("Alarm System has timed out. No events detected!");
@@ -1492,26 +1581,26 @@ namespace FinchTalentShow
         /// <param name="alarmType">Type of Alarm the user wants to run</param>
         private static void DisplayBothAlarms(string alarmType)
         {
-            var values = getMultipleAlarmSystemParams(alarmType);
+            var (time, lightLowerThreshold, lightUpperThreshold, tempLowerThreshold, tempUpperThreshold) = GetMultipleAlarmSystemParams(alarmType);
             DisplayConsoleUI("Light and Temp Alarm System Active");
             int count = 1;
-            double ambientTemp = convertToF(myFinch.getTemperature());
+            double ambientTemp = ConvertToF(myFinch.getTemperature());
             int ambientLight = myFinch.getLeftLightSensor();
             Console.WriteLine();
-            Console.WriteLine($"Lower Light Threshold = {values.lightLowerThreshold}");
-            Console.WriteLine($"Upper Light Threshold = {values.lightUpperThreshold}");
+            Console.WriteLine($"Lower Light Threshold = {lightLowerThreshold}");
+            Console.WriteLine($"Upper Light Threshold = {lightUpperThreshold}");
             Console.WriteLine($"Ambient Light Reading = {ambientLight}");
             Console.WriteLine();
-            Console.WriteLine($"Lower Temp Threshold = {values.tempLowerThreshold}");
-            Console.WriteLine($"Upper Temp Threshold = {values.tempUpperThreshold}");
+            Console.WriteLine($"Lower Temp Threshold = {tempLowerThreshold}");
+            Console.WriteLine($"Upper Temp Threshold = {tempUpperThreshold}");
             Console.WriteLine($"Ambient Temp Reading = {ambientTemp:F2}");
             Console.WriteLine();
             Console.WriteLine();
-            if (ambientLight > values.lightLowerThreshold && ambientLight < values.lightUpperThreshold && ambientTemp > values.tempLowerThreshold && ambientTemp < values.tempUpperThreshold && count <= values.time)
+            if (ambientLight > lightLowerThreshold && ambientLight < lightUpperThreshold && ambientTemp > tempLowerThreshold && ambientTemp < tempUpperThreshold && count <= time)
             {
                 while (true)
                 {
-                    double currentTempReading = convertToF(myFinch.getTemperature());
+                    double currentTempReading = ConvertToF(myFinch.getTemperature());
                     int currentLightReading = myFinch.getLeftLightSensor();
                     Console.SetCursorPosition(0, 15);
                     Console.Write("\r" + new string(' ', Console.WindowWidth - 1) + "\r");
@@ -1521,7 +1610,7 @@ namespace FinchTalentShow
                     Console.Write($"Current Temp Sensor Value = {currentTempReading:F2}");
                     myFinch.wait(1000);
                     count++;
-                    if (currentLightReading < values.lightLowerThreshold || currentLightReading > values.lightUpperThreshold || currentTempReading < values.tempLowerThreshold || currentTempReading > values.tempUpperThreshold)
+                    if (currentLightReading < lightLowerThreshold || currentLightReading > lightUpperThreshold || currentTempReading < tempLowerThreshold || currentTempReading > tempUpperThreshold)
                     {
                         DisplayConsoleUI("Alarm Triggered!!!!!");
                         Console.WriteLine();
@@ -1541,7 +1630,7 @@ namespace FinchTalentShow
                         myFinch.noteOff();
                         break;
                     }
-                    else if (count >= values.time)
+                    else if (count >= time)
                     {
                         DisplayConsoleUI("No Alarm Trigged");
                         Console.WriteLine("Alarm System has timed out. No events detected!");
@@ -1562,11 +1651,182 @@ namespace FinchTalentShow
         /// </summary>
         /// <param name="temp">The temp in C as returned by the Finch</param>
         /// <returns>Returns the temp converted to Farenheight</returns>
-        private static double convertToF(double temp)
+        private static double ConvertToF(double temp)
         {
             temp = (temp * 1.8) + 32;
             return temp;
         }
+
+        #endregion
+
+        #region User Control
+
+        private static (int wheelSpeed, int r, int g, int b, int hertz) GetUserControlParams()
+        {
+            DisplayConsoleUI("User Control Parameters");
+            int wheelSpeed = IsValidInt("Please enter a speed for the finch (1-255): ", 1, 255);
+            int r = IsValidInt("Please enter the brightness for the RED LED (0-255): ", 0, 255);
+            int g = IsValidInt("Please enter the brightness for the GREEN LED (0-255): ", 0, 255);
+            int b = IsValidInt("Please enter the brightness for the BLUE LED (0-255): ", 0, 255);
+            int hertz = IsValidInt("Please enter the frequency for the Buzzer (0-22000): ", 0, 22000);
+            return (wheelSpeed, r, g, b, hertz);
+        }
+
+        private static List<UserControlCommands> DisplayUserControlCommands(List<UserControlCommands> commands)
+        {
+            UserControlCommands command = UserControlCommands.None;
+            while (command != UserControlCommands.Done)
+            {
+                DisplayConsoleUI("User Control Commands");
+                Console.Write(@"
+             User Control Command List
+
+   1. Move Forward
+   2. Move Backward
+   3. Stop Motors
+   4. Turn Right
+   5. Turn Left
+   6. LED On
+   7. LED Off
+   8. Buzzer On
+   9. Buzzer Off
+  10. Spin
+  11. Read Temp
+  12. Read Light Level
+  13. Play Star Wars
+  14. Done
+
+
+
+
+
+  Option (1-14): ");
+                Enum.TryParse(Console.ReadLine(), out command);
+                if (command != UserControlCommands.None)
+                {
+                    commands.Add(command);
+                    DisplayConsoleUI("Command Added");
+                    Console.WriteLine($"Command Added to List: {command}");
+                    DisplayContinuePrompt();
+                }
+            }
+            return commands;
+        }
+
+        private static void ViewUserControlCommandsInput(List<UserControlCommands> commands)
+        {
+            DisplayConsoleUI("Commands Entered");
+            int counter = 1;
+            if (commands.Count == 0)
+            {
+                Console.WriteLine("There are no commands here. Please go back and enter 2 to insert some commands first!");
+            }
+            else
+            {
+                foreach (UserControlCommands command in commands)
+                {
+                    Console.WriteLine();
+                    Console.WriteLine($"Command #{counter}: {command}");
+                    counter++;
+                }
+            }
+            DisplayContinuePrompt();
+        }
+
+        private static void ExecuteUserControlCommands(List<UserControlCommands> commands, (int wheelSpeed, int r, int g, int b, int hertz) userControlParams)
+        {
+            DisplayConsoleUI("Execute Commands");
+
+            int motorSpeed = userControlParams.wheelSpeed;
+            int r = userControlParams.r;
+            int g = userControlParams.g;
+            int b = userControlParams.b;
+            int hertz = userControlParams.hertz;
+
+
+            foreach (UserControlCommands command in commands)
+            {
+                switch (command)
+                {
+                    case UserControlCommands.None:
+                        break;
+                    case UserControlCommands.MoveForward:
+                        myFinch.setMotors(motorSpeed, motorSpeed);
+                        myFinch.wait(1000);
+                        break;
+                    case UserControlCommands.MoveBackward:
+                        myFinch.setMotors(-motorSpeed, -motorSpeed);
+                        myFinch.wait(1000);
+                        break;
+                    case UserControlCommands.StopMotors:
+                        myFinch.setMotors(0, 0);
+                        break;
+                    case UserControlCommands.TurnRight:
+                        myFinch.setMotors(0, motorSpeed);
+                        myFinch.wait(1000);
+                        break;
+                    case UserControlCommands.TurnLeft:
+                        myFinch.setMotors(motorSpeed, 0);
+                        myFinch.wait(1000);
+                        break;
+                    case UserControlCommands.LEDOn:
+                        myFinch.setLED(r, g, b);
+                        myFinch.wait(1000);
+                        break;
+                    case UserControlCommands.LEDOff:
+                        myFinch.setLED(0, 0, 0);
+                        break;
+                    case UserControlCommands.BuzzerOn:
+                        myFinch.noteOn(hertz);
+                        myFinch.wait(1000);
+                        break;
+                    case UserControlCommands.BuzzerOff:
+                        myFinch.noteOff();
+                        break;
+                    case UserControlCommands.Spin:
+                        myFinch.setMotors(motorSpeed, 0);
+                        myFinch.wait(2000);
+                        myFinch.setMotors(0, 0);
+                        break;
+                    case UserControlCommands.Temp:
+                        Console.WriteLine(myFinch.getTemperature());
+                        break;
+                    case UserControlCommands.Light:
+                        int[] lightLevel = myFinch.getLightSensors();
+                        Console.WriteLine($"Current Light Level: Left Light Sensor{0, 2} Right Light Sensor{1, 2}", lightLevel[0], lightLevel[1]);
+                        break;
+                    case UserControlCommands.StarWars:
+                        BuzzerStarWars();
+                        break;
+                    case UserControlCommands.Done:
+                        break;
+                    default:
+                        break;
+                }
+            }
+            myFinch.disConnect();
+            DisplayContinuePrompt();
+        }
+
+        private static List<UserControlCommands> ClearUserControlCommandList(List<UserControlCommands> commands)
+        {
+            DisplayConsoleUI("Clear User Control Commands");
+            Console.Write("Are you sure you wish to clear the command list [Y]es or [N]o: ");
+            string userResponse = Console.ReadLine().ToUpper().Trim(); 
+            if (userResponse == "Y" || userResponse == "YES")
+            {
+                commands.Clear();
+            }
+            else
+            {
+                Console.WriteLine();
+                Console.WriteLine("Ok, not deleting any of your commands");
+                DisplayContinuePrompt();
+            }
+
+            return commands;
+        }
+
 
         #endregion
 
@@ -1586,14 +1846,14 @@ namespace FinchTalentShow
             DisplayContinuePrompt();
             if (!ConnectFinch())
             {
-                    Console.WriteLine("Sorry I am unable to connect to the Finch at this time.");
-                    Console.WriteLine();
-                    Console.SetCursorPosition(1, 7);
-                    Console.WriteLine("Please check that the cable is connected properly and that Windows see's your device");
-                    Console.SetCursorPosition(1, 9);
-                    Console.WriteLine("Unfortunately, I have to quit the application. Please try again. ");
-                    DisplayContinuePrompt();
-                    Environment.Exit(0);
+                Console.WriteLine("Sorry I am unable to connect to the Finch at this time.");
+                Console.WriteLine();
+                Console.SetCursorPosition(1, 7);
+                Console.WriteLine("Please check that the cable is connected properly and that Windows see's your device");
+                Console.SetCursorPosition(1, 9);
+                Console.WriteLine("Unfortunately, I have to Quit the application. Please try again. ");
+                DisplayContinuePrompt();
+                Environment.Exit(0);
             }
             else
             {
@@ -1613,7 +1873,7 @@ namespace FinchTalentShow
             for (int i = 0; i <= MAX_TRIES; i++)
             {
                 if (myFinch.connect())
-                { 
+                {
                     connected = true;
                 }
                 else
@@ -1672,53 +1932,60 @@ namespace FinchTalentShow
         /// /// <param name="min">Lower bounds of the integer</param>
         /// /// <param name="max">Upward bounds of the integer</param>
         /// <returns>Returns the validated integer</returns>
-        private static int isValidInt(string prompt, int min = 0, int max = 1000)
+        private static int IsValidInt(string prompt, int min = 0, int max = 1000)
         {
-            bool isValidInt = false;
+            bool IsValidInt = false;
             int x = 0;
             const int MAX_TRIES = 3;
             int i = 0;
-            while (!isValidInt && i <= MAX_TRIES)
+            while (!IsValidInt && i <= MAX_TRIES)
             {
                 Console.Write($"{prompt}");
-                isValidInt = int.TryParse(Console.ReadLine(), out x);
-                if (!isValidInt || x < min || x > max)
+                IsValidInt = int.TryParse(Console.ReadLine(), out x);
+                if (!IsValidInt || x < min || x > max)
                 {
                     Console.WriteLine("Sorry, that response isn't valid. Please try again!");
-                    isValidInt = false;
+                    IsValidInt = false;
                     i++;
                     if (i > MAX_TRIES)
                     {
                         Console.WriteLine("Sorry, but you have tried too many times and failed to put in the correct data. I am exiting the program. Please try again later.");
                         DisplayContinuePrompt();
-                        quit();
-                        
+                        Quit();
+
                     }
                 }
             }
             return x;
         }
 
-        private static double isValidDouble(string prompt, double min = 0, double max = 1000)
+        /// <summary>
+        /// Checks to see if the user response is a valid double
+        /// </summary>
+        /// <param name="prompt">Prompts the user with a question</param>
+        /// <param name="min">Lower bound of accepted range</param>
+        /// <param name="max">Upper Bound of accepted range</param>
+        /// <returns>returns user input double</returns>
+        private static double IsValidDouble(string prompt, double min = 0, double max = 1000)
         {
-            bool isValidDouble = false;
+            bool IsValidDouble = false;
             double x = 0;
             const int MAX_TRIES = 3;
             int i = 0;
-            while (!isValidDouble && i <= MAX_TRIES)
+            while (!IsValidDouble && i <= MAX_TRIES)
             {
                 Console.Write($"{prompt}");
-                isValidDouble = double.TryParse(Console.ReadLine(), out x);
-                if (!isValidDouble || x < min || x > max)
+                IsValidDouble = double.TryParse(Console.ReadLine(), out x);
+                if (!IsValidDouble || x < min || x > max)
                 {
                     Console.WriteLine("Sorry, that response isn't valid. Please try again!");
-                    isValidDouble = false;
+                    IsValidDouble = false;
                     i++;
                     if (i > MAX_TRIES)
                     {
                         Console.WriteLine("Sorry, but you have tried too many times and failed to put in the correct data. I am exiting the program. Please try again later.");
                         DisplayContinuePrompt();
-                        quit();
+                        Quit();
                     }
                 }
             }
@@ -1733,7 +2000,7 @@ namespace FinchTalentShow
         /// <param name="min">Lower bounds of the menu choice</param>
         /// <param name="max">Upper bounds of the menu choice</param>
         /// <returns>Returns the user menu choiceas a validated int</returns>
-        private static int isValidMenuOption(string screenName, string prompt, int min, int max)
+        private static int IsValidMenuOption(string screenName, string prompt, int min, int max)
         {
             bool isValidMenuChoice = false;
             int userResponse = 0;
@@ -1755,7 +2022,7 @@ namespace FinchTalentShow
                     {
                         Console.WriteLine("Sorry, but you have tried too many times and failed to put in the correct data. I am exiting the program. Please try again later.");
                         DisplayContinuePrompt();
-                        quit();
+                        Quit();
                     }
                     DisplayContinuePrompt();
                 }
@@ -1780,7 +2047,7 @@ namespace FinchTalentShow
         /// <summary>
         /// Quits the Application
         /// </summary>
-        private static void quit()
+        private static void Quit()
         {
             Environment.Exit(0);
         }
@@ -1793,5 +2060,5 @@ namespace FinchTalentShow
         }
 
         #endregion
-    } 
+    }
 }
