@@ -360,12 +360,15 @@ namespace FinchTalentShow
             switch (menuOption)
             {
                 case TalentShowMenu.LED:
+                    DisplayLEDMenuInstructions();
                     GetLEDMenuOption(DisplayLEDMenu());
                     break;
                 case TalentShowMenu.Buzzer:
+                    DisplayBuzzerMenuInstructions();
                     GetBuzzerMenuOption(DisplayBuzzerMenu());
                     break;
                 case TalentShowMenu.Wheels:
+                    DisplayWheelMenuInstructions();
                     GetWheelMenuOption(DisplayWheelsMenu());
                     break;
                 case TalentShowMenu.Back:
@@ -931,10 +934,11 @@ namespace FinchTalentShow
         private static (int r, int g, int b, int time) GetLEDParams()
         {
             DisplayConsoleUI("Set LED Parameters");
-            int r = IsValidInt("Enter value for Red LED (0-255): ", 0, 255);
-            int g = IsValidInt("Enter Value for Green LED (0-255): ", 0, 255);
-            int b = IsValidInt("Enter Value for Blue LED (0-255): ", 0, 255);
-            int time = IsValidInt("Enter Value for Time (ms): ", 0, 100000);
+            int r = IsValidInt("Enter value for Red LED <0(Off) - 255(Max Brightness)>: ", 0, 255);
+            int g = IsValidInt("Enter Value for Green LED <0(Off) - 255(Max Brightness)>: ", 0, 255);
+            int b = IsValidInt("Enter Value for Blue LED <0(Off) - 255(Max Brightness)>: ", 0, 255);
+            int time = IsValidInt("Enter Value for Time (seconds): ", 0, 100000);
+            time *= 1000;
             return (r, g, b, time);
         }
 
@@ -1050,6 +1054,27 @@ namespace FinchTalentShow
             }
         }
 
+        /// <summary>
+        /// LED Talent Show Menu Instructions/Description
+        /// </summary>
+        private static void DisplayLEDMenuInstructions()
+        {
+            DisplayConsoleUI("LED Menu Instructions");
+            Console.ForegroundColor = ConsoleColor.Cyan;
+            Console.WriteLine(@"
+     The LED Menu has several different components. 
+
+     1. You can turn the LED On for a specified color (Mix between red, green, and blue)
+     2. You can make the LED Blink for a specified amount of time the LED is ON and # of Blinks
+     3. You can have multiple LED colors blink for varying times (predefined time and pattern)
+     4. You can have the LED Pulse all colors. Goes from off to red, red to off, off to green, green to off,
+        off to blue, and finally blue to off. Cycles through these colors once (predefined timing)
+
+     This menu is to highlight some of the Finch's abilities regarding the LED Light
+");
+            DisplayContinuePrompt();
+        }
+
         #endregion
 
         #region Buzzer Control
@@ -1062,7 +1087,8 @@ namespace FinchTalentShow
         {
             DisplayConsoleUI("Get Buzzer Parameters");
             int hertz = IsValidInt("Please enter the Frequency of the Buzzer (hertz): ", 0, 22000);
-            int time = IsValidInt("Please enter the length of time for the Buzzer to be on (ms): ", 0, 100000);
+            int time = IsValidInt("Please enter the length of time for the Buzzer to be on (seconds): ", 0, 100000);
+            time *= 1000;
             return (hertz, time);
         }
 
@@ -1171,6 +1197,23 @@ namespace FinchTalentShow
             SetBuzzerOn(352, 1000);
         }
 
+        /// <summary>
+        /// Displays the Buzzer Talent Show Menu Instructions
+        /// </summary>
+        private static void DisplayBuzzerMenuInstructions()
+        {
+            DisplayConsoleUI("Buzzer Menu Instructions");
+            Console.ForegroundColor = ConsoleColor.Cyan;
+            Console.WriteLine(@"
+     The Buzzer Menu has several different components.
+     
+     1. You can turn the Buzzer on for a specified amount of time
+     2. You can play the Star Wars Theme song
+     3. You can play the Happy Birthday song
+");
+            DisplayContinuePrompt();
+        }
+
         #endregion
 
         #region Wheels Control
@@ -1182,10 +1225,10 @@ namespace FinchTalentShow
         private static (int left, int right, int time) GetWheelsParams()
         {
             DisplayConsoleUI("Set Wheel Parameters");
-            int left = IsValidInt("Enter the speed of the Left Wheel (0-255): ", 0, 255);
-            int right = IsValidInt("Enter the speed of the Right Wheel (0-255)", 0, 255);
-            int time = IsValidInt("Enter the time for the Finch Robot to Drive (ms): ", 0, 100000);
-
+            int left = IsValidInt("Enter the speed of the Left Wheel <0(Stopped) - 255(Full Speed)>: ", 0, 255);
+            int right = IsValidInt("Enter the speed of the Right Wheel <0(Stopped) - 255(Full Speed)>", 0, 255);
+            int time = IsValidInt("Enter the time for the Finch Robot to Drive (seconds): ", 0, 100000);
+            time *= 1000;
             return (left, right, time);
         }
 
@@ -1233,6 +1276,25 @@ namespace FinchTalentShow
             myFinch.setMotors(0, 0);
         }
 
+        /// <summary>
+        /// Displays the Wheel Menu Instructions
+        /// </summary>
+        private static void DisplayWheelMenuInstructions()
+        {
+            DisplayConsoleUI("Wheel Menu Instructions");
+            Console.ForegroundColor = ConsoleColor.Cyan;
+            Console.WriteLine(@"
+     The Wheel Menu has several different components.
+    
+     1. You can move the Finch forward for a specified amount of time
+     2. You can move the Finch backward for a specified amount of time
+     3. You can turn the Finch right 90 degrees (prespecified)
+     4. You can turn the Finch left 90 degrees (prespecified)
+
+");
+            DisplayContinuePrompt();
+        }
+
         #endregion
 
         #endregion
@@ -1251,6 +1313,7 @@ namespace FinchTalentShow
             int dataPoints = IsValidInt("Please enter the amount of Data Points you wish to collect: ", 1, 100000);
             Console.WriteLine();
             Console.WriteLine($"Gathering the Data. Time until completion: {(double)(time * dataPoints) / 60:F1} mins");
+            time *= 1000;
             return (time, dataPoints);
         }
 
@@ -1260,13 +1323,13 @@ namespace FinchTalentShow
         /// <returns>Returns Multidimensional Array of Left and Right Light Sensor Readings</returns>
         private static int[][] GetLightSensorData()
         {
-            var (dataPoints, time) = GetLightSensorParams();
+            var (time, dataPoints) = GetLightSensorParams();
 
             int[][] sensorData = new int[dataPoints][];
             for (int i = 0; i < dataPoints; i++)
             {
                 sensorData[i] = myFinch.getLightSensors();
-                myFinch.wait(time * 1000);
+                myFinch.wait(time);
             }
             return sensorData;
         }
