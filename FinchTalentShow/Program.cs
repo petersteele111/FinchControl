@@ -9,6 +9,9 @@ namespace FinchTalentShow
     {
         #region Enums for Menu's
 
+        /// <summary>
+        /// Main Menu Enum
+        /// </summary>
         public enum Menu : byte
         {
             ConnectFinch = 1,
@@ -20,6 +23,9 @@ namespace FinchTalentShow
             Quit
         }
 
+        /// <summary>
+        /// Talent Show Menu enum
+        /// </summary>
         public enum TalentShowMenu : byte
         {
             LED = 1,
@@ -28,6 +34,9 @@ namespace FinchTalentShow
             Back
         }
 
+        /// <summary>
+        /// LED Menu enum
+        /// </summary>
         public enum LEDMenu : byte
         {
             On = 1,
@@ -37,6 +46,9 @@ namespace FinchTalentShow
             Back
         }
 
+        /// <summary>
+        /// Buzzer Menu enum
+        /// </summary>
         public enum BuzzerMenu : byte
         {
             On = 1,
@@ -45,6 +57,9 @@ namespace FinchTalentShow
             Back
         }
 
+        /// <summary>
+        /// Wheels Menu enum
+        /// </summary>
         public enum WheelsMenu : byte
         {
             Forward = 1,
@@ -54,6 +69,9 @@ namespace FinchTalentShow
             Back
         }
 
+        /// <summary>
+        /// DataRecorder Menu enum
+        /// </summary>
         public enum DataRedcorderMenu : byte
         {
             Light = 1,
@@ -61,6 +79,9 @@ namespace FinchTalentShow
             Back
         }
 
+        /// <summary>
+        /// Light Sensor Menu enum
+        /// </summary>
         public enum LightSensorMenu : byte
         {
             Light = 1,
@@ -68,12 +89,18 @@ namespace FinchTalentShow
             Back
         }
 
+        /// <summary>
+        /// Temperature Sensor Menu enum
+        /// </summary>
         public enum TempSensorMenu : byte
         {
             Temp = 1,
             Back
         }
 
+        /// <summary>
+        /// Alarm System Menu enum
+        /// </summary>
         public enum AlarmSystemMenu : byte
         {
             Light = 1,
@@ -82,6 +109,9 @@ namespace FinchTalentShow
             Back
         }
 
+        /// <summary>
+        /// User Control Menu enum
+        /// </summary>
         public enum UserControlMenu : byte
         {
             Parameters = 1,
@@ -92,6 +122,9 @@ namespace FinchTalentShow
             Back
         }
 
+        /// <summary>
+        /// User Control Commands enum
+        /// </summary>
         public enum UserControlCommands : byte
         {
             None,
@@ -182,12 +215,23 @@ namespace FinchTalentShow
         private static void DisplayClosingScreen()
         {
             DisplayConsoleUI("Goodbye");
-            Console.WriteLine("So our time has come to an end. I enjoyed working with your Finch today!");
+            Console.WriteLine("So our time has sadly come to an end. I enjoyed working with your Finch today!");
             Console.WriteLine();
             Console.SetCursorPosition(1, 7);
             Console.WriteLine("Thank you for using this program. Until next time!");
             DisplayContinuePrompt();
             Quit();
+        }
+
+        /// <summary>
+        /// Displays the Welcome Screen
+        /// </summary>
+        private static void DisplayWelcomeScreen()
+        {
+            DisplayConsoleUI("Welcome to The Finch Project");
+            Console.ForegroundColor = ConsoleColor.Cyan;
+            Console.WriteLine("Welcome to my Finch Project. I hope you enjoy this program. ");
+            DisplayContinuePrompt();
         }
 
         #endregion
@@ -806,14 +850,16 @@ namespace FinchTalentShow
         /// <returns>Returns the users menu choice</returns>
         private static void DisplayUserControlMenu()
         {
-            List<UserControlCommands> commands = new List<UserControlCommands>();
+            List<Tuple<UserControlCommands, int>> commands = new List<Tuple<UserControlCommands, int>>();
             (int wheelSpeed, int r, int g, int b, int hertz) userControlParams;
             userControlParams.wheelSpeed = 0;
             userControlParams.r = 0;
             userControlParams.g = 0;
             userControlParams.b = 0;
             userControlParams.hertz = 0;
-
+            DisplayUserControlInstructions();
+            DisplayConsoleUI("User Control Params");
+            userControlParams = GetUserControlParams();
             bool back = false;
             do
             {
@@ -1407,6 +1453,16 @@ namespace FinchTalentShow
             return convertedSensorData;
         }
 
+        /// <summary>
+        /// Converts Celcius to Farenheight
+        /// </summary>
+        /// <param name="temp">Double of temperature data</param>
+        /// <returns>Returns the converted temperature in farenheight</returns>
+        private static double ConvertCtoF(double temp)
+        {
+            return (temp * 1.8) + 32;
+        }
+
         #endregion
 
         #region AlarmSystem Control
@@ -1661,24 +1717,34 @@ namespace FinchTalentShow
 
         #region User Control
 
+        /// <summary>
+        /// Gets the default User Control Parameters
+        /// </summary>
+        /// <returns>Returns a tuple with the default User Control Parameters</returns>
         private static (int wheelSpeed, int r, int g, int b, int hertz) GetUserControlParams()
         {
             DisplayConsoleUI("User Control Parameters");
-            int wheelSpeed = IsValidInt("Please enter a speed for the finch (1-255): ", 1, 255);
-            int r = IsValidInt("Please enter the brightness for the RED LED (0-255): ", 0, 255);
-            int g = IsValidInt("Please enter the brightness for the GREEN LED (0-255): ", 0, 255);
-            int b = IsValidInt("Please enter the brightness for the BLUE LED (0-255): ", 0, 255);
-            int hertz = IsValidInt("Please enter the frequency for the Buzzer (0-22000): ", 0, 22000);
+            int wheelSpeed = IsValidInt("Please enter a speed for the finch < 1=(slow) - 255=(Max Speed) >: ", 1, 255);
+            int r = IsValidInt("Please enter the brightness for the RED LED < 0=(Off) - 255=(Full Brightness) >: ", 0, 255);
+            int g = IsValidInt("Please enter the brightness for the GREEN LED < 0=(Off) - 255= (Full Brightness) >: ", 0, 255);
+            int b = IsValidInt("Please enter the brightness for the BLUE LED < 0=(Off) - 255=(Full Brightness) >: ", 0, 255);
+            int hertz = IsValidInt("Please enter the frequency for the Buzzer < 0=(Off) - 22000=(High) >: ", 0, 22000);
             return (wheelSpeed, r, g, b, hertz);
         }
 
-        private static List<UserControlCommands> DisplayUserControlCommands(List<UserControlCommands> commands)
+        /// <summary>
+        /// Displays the User Control Commands for the user to create their own program
+        /// </summary>
+        /// <param name="commands">List with tuples inside of the user command and time to run the command</param>
+        /// <returns>Returns back a List with tuples of each command and time to run the command</returns>
+        private static List<Tuple<UserControlCommands, int>> DisplayUserControlCommands(List<Tuple<UserControlCommands, int>> commands)
         {
+            DisplayUserCommandsInstructions();
             UserControlCommands command = UserControlCommands.None;
             while (command != UserControlCommands.Done)
             {
                 DisplayConsoleUI("User Control Commands");
-                Console.Write(@"
+                int userResponse = IsValidMenuOption("User Control Commands", @"
              User Control Command List
 
    1. Move Forward
@@ -1699,23 +1765,43 @@ namespace FinchTalentShow
 
 
 
-
-  Option (1-14): ");
-                Enum.TryParse(Console.ReadLine(), out command);
+  Option (1-14): ", 1, 14);
+                Enum.TryParse(Convert.ToString(userResponse), out command);
+                int time = IsValidInt("Enter runtime in Seconds. When selecting Option 14 (Done) enter 0. (0-1000): ", 0, 1000);
                 if (command != UserControlCommands.None)
                 {
-                    commands.Add(command);
-                    DisplayConsoleUI("Command Added");
-                    Console.WriteLine($"Command Added to List: {command}");
+                    int counter = 1;
+                    commands.Add( new Tuple<UserControlCommands, int>(command, time));
+                    DisplayConsoleUI("Command Added", commands.Count + 9);
+                    Console.WriteLine();
+                    foreach (Tuple<UserControlCommands, int> userCommand in commands)
+                    {
+                        UserControlCommands userCommands = userCommand.Item1;
+                        time = userCommand.Item2;
+                        Console.WriteLine($"Command #{counter}: {userCommands} with a runtime of {time} seconds");
+                        counter++;
+                    }
                     DisplayContinuePrompt();
                 }
             }
             return commands;
         }
 
-        private static void ViewUserControlCommandsInput(List<UserControlCommands> commands)
+        /// <summary>
+        /// Displays the list of User Commands and the time to run each command input by the user
+        /// </summary>
+        /// <param name="commands">List with tuples inside of the user command and time to run the command</param>
+        private static void ViewUserControlCommandsInput(List<Tuple<UserControlCommands, int>> commands)
         {
-            DisplayConsoleUI("Commands Entered");
+            if (commands.Count < 20)
+            {
+                DisplayConsoleUI("Commands Entered");
+            }
+            else
+            {
+                DisplayConsoleUI("Commands Entered", (commands.Count) + 8);
+            }
+
             int counter = 1;
             if (commands.Count == 0)
             {
@@ -1723,17 +1809,24 @@ namespace FinchTalentShow
             }
             else
             {
-                foreach (UserControlCommands command in commands)
+                Console.WriteLine();
+                foreach (Tuple<UserControlCommands, int> command in commands)
                 {
-                    Console.WriteLine();
-                    Console.WriteLine($"Command #{counter}: {command}");
+                    UserControlCommands userCommand = command.Item1;
+                    int time = command.Item2;
+                    Console.WriteLine($"Command #{counter}: {userCommand} with a runtime of {time} seconds");
                     counter++;
                 }
             }
             DisplayContinuePrompt();
         }
 
-        private static void ExecuteUserControlCommands(List<UserControlCommands> commands, (int wheelSpeed, int r, int g, int b, int hertz) userControlParams)
+        /// <summary>
+        /// Executes the user control commands input by the user
+        /// </summary>
+        /// <param name="commands">List with tuples inside of the user command and time to run the command</param>
+        /// <param name="userControlParams">A tuple with the default User Control Parameters</param>
+        private static void ExecuteUserControlCommands(List<Tuple<UserControlCommands, int>> commands, (int wheelSpeed, int r, int g, int b, int hertz) userControlParams)
         {
             DisplayConsoleUI("Execute Commands");
 
@@ -1744,59 +1837,70 @@ namespace FinchTalentShow
             int hertz = userControlParams.hertz;
 
 
-            foreach (UserControlCommands command in commands)
+            foreach (Tuple<UserControlCommands, int> command in commands)
             {
-                switch (command)
+                UserControlCommands userCommand = command.Item1;
+                int time = command.Item2 * 1000;
+
+                switch (command.Item1)
                 {
                     case UserControlCommands.None:
                         break;
                     case UserControlCommands.MoveForward:
                         myFinch.setMotors(motorSpeed, motorSpeed);
-                        myFinch.wait(1000);
+                        myFinch.wait(time);
                         break;
                     case UserControlCommands.MoveBackward:
                         myFinch.setMotors(-motorSpeed, -motorSpeed);
-                        myFinch.wait(1000);
+                        myFinch.wait(time);
                         break;
                     case UserControlCommands.StopMotors:
                         myFinch.setMotors(0, 0);
+                        myFinch.wait(time);
                         break;
                     case UserControlCommands.TurnRight:
                         myFinch.setMotors(0, motorSpeed);
-                        myFinch.wait(1000);
+                        myFinch.wait(time);
                         break;
                     case UserControlCommands.TurnLeft:
                         myFinch.setMotors(motorSpeed, 0);
-                        myFinch.wait(1000);
+                        myFinch.wait(time);
                         break;
                     case UserControlCommands.LEDOn:
                         myFinch.setLED(r, g, b);
-                        myFinch.wait(1000);
+                        myFinch.wait(time);
                         break;
                     case UserControlCommands.LEDOff:
                         myFinch.setLED(0, 0, 0);
+                        myFinch.wait(time);
                         break;
                     case UserControlCommands.BuzzerOn:
                         myFinch.noteOn(hertz);
-                        myFinch.wait(1000);
+                        myFinch.wait(time);
                         break;
                     case UserControlCommands.BuzzerOff:
                         myFinch.noteOff();
+                        myFinch.wait(time);
                         break;
                     case UserControlCommands.Spin:
                         myFinch.setMotors(motorSpeed, 0);
-                        myFinch.wait(2000);
+                        myFinch.wait(time);
                         myFinch.setMotors(0, 0);
                         break;
                     case UserControlCommands.Temp:
-                        Console.WriteLine(myFinch.getTemperature());
+                        Console.WriteLine();
+                        Console.WriteLine("Current Temperature Reading: {0}°f",ConvertCtoF(myFinch.getTemperature()));
+                        myFinch.wait(time);
                         break;
                     case UserControlCommands.Light:
+                        Console.WriteLine();
                         int[] lightLevel = myFinch.getLightSensors();
-                        Console.WriteLine($"Current Light Level: Left Light Sensor{0, 2} Right Light Sensor{1, 2}", lightLevel[0], lightLevel[1]);
+                        Console.WriteLine($"Current Light Level: Left Light Sensor: {lightLevel[0]} Right Light Sensor: {lightLevel[1]}");
+                        myFinch.wait(time);
                         break;
                     case UserControlCommands.StarWars:
                         BuzzerStarWars();
+                        myFinch.wait(time);
                         break;
                     case UserControlCommands.Done:
                         break;
@@ -1804,11 +1908,18 @@ namespace FinchTalentShow
                         break;
                 }
             }
+            Console.WriteLine();
+            Console.WriteLine("Program has completed successfully! Clear the command list to start a new program or run it again!");
             myFinch.disConnect();
             DisplayContinuePrompt();
         }
 
-        private static List<UserControlCommands> ClearUserControlCommandList(List<UserControlCommands> commands)
+        /// <summary>
+        /// Clears the list of the input user commands
+        /// </summary>
+        /// <param name="commands">List with tuples inside of the user command and time to run the command</param>
+        /// <returns>Returns the List with tuples inside of the user commands and the time to run each command. Empty if cleared</returns>
+        private static List<Tuple<UserControlCommands, int>> ClearUserControlCommandList(List<Tuple<UserControlCommands, int>> commands)
         {
             DisplayConsoleUI("Clear User Control Commands");
             Console.Write("Are you sure you wish to clear the command list [Y]es or [N]o: ");
@@ -1816,6 +1927,9 @@ namespace FinchTalentShow
             if (userResponse == "Y" || userResponse == "YES")
             {
                 commands.Clear();
+                Console.WriteLine();
+                Console.WriteLine("Ok, all commands have been deleted. Please input new commands!");
+                DisplayContinuePrompt();
             }
             else
             {
@@ -1827,12 +1941,75 @@ namespace FinchTalentShow
             return commands;
         }
 
+        /// <summary>
+        /// Displays the User Instructions on how to program the Finch
+        /// </summary>
+        private static void DisplayUserCommandsInstructions()
+        {
+            DisplayConsoleUI("User Command Instructions", 35);
+            Console.ForegroundColor = ConsoleColor.Cyan;
+            Console.WriteLine(@"
+
+     On the next screen, you will be presented with a list of commands you may enter to control your finch.
+     Please read the following instructions carefully for optimum results.
+
+  1. Select the numeric (number) value of the command you wish to add to the list and press <Enter>.
+
+  2. Please input the time (in seconds) you wish for the command to run and then press <Enter>.
+
+  3. Please note, that if you run the Motors, LED, or Buzzer and do not specify the proper off command, 
+     they will run indefinitely. 
+
+  4. I advise you specify an Off condition to prevent the Finch from running indefinitely. If you happen to do so,
+     please hit <CTRL> + C
+
+  5. For instances that you are turning off the LED, Buzzer, or Motor, you should set the run time seconds to 0 
+     so you do not need to wait until the next command is executed. If you wish to pause, after turning something
+     off, then specify the time as required before the next command runs.
+
+  6. You may enter as many commands as you wish. 
+
+  7. When you are finished, you must select option 14 (Done) and enter any time value you wish. Preferrably 0. 
+
+  8. After you have entered the commands, you will be taken back to the Control Screen, where you may view the
+     full list of commands in order, clear the list and start over, or execute the commands and begin your program. 
+
+  I hope you enjoy this program and have fun playing around with the Finch. Thank you!
+");
+            DisplayContinuePrompt();
+        }
+
+        /// <summary>
+        /// Displays the Main User Control instructions
+        /// </summary>
+        private static void DisplayUserControlInstructions()
+        {
+            DisplayConsoleUI("User Control Instructions");
+            Console.ForegroundColor = ConsoleColor.Cyan;
+            Console.WriteLine(@"
+
+     Welcome to the User Control portion of the Finch Robot program!
+     These instructions will guide you on how to properly utilize this section of the program.
+
+  1. On the next screen, you will be asked to input some base parameters for the Finch Robot.
+  2. Please enter the speed of the robot. Values range from 0-255. 0 being dead stopped, and 255 
+     being max speed.
+  3. Next you will enter the LED value for the RED LED. 0 is off, and 255 is Max Brightness.
+  4. Next you will enter the LED value for the GREEN LED. Same as above.
+  5. Next you will enter the LED value for the BLUE LED. Same as above.
+  6. Next you will enter the frequency(tone) of the buzzer. 0 is off, and 22000 is high pitched.
+  7. After this, you will be taken to the User Control Panel, where you can enter commands,
+     view the commands, execute the commands, clear the commands, or re-enter the default params above.
+  8. I hope you enjoy this program!
+");
+            DisplayContinuePrompt();
+        }
 
         #endregion
 
         #endregion
 
-        #region Finch Robot Connection Logic
+        #region Finch Robot Connection/Disconnect Logic
         /// <summary>
         /// Connect to the Finch Robot
         /// </summary>
@@ -2050,13 +2227,6 @@ namespace FinchTalentShow
         private static void Quit()
         {
             Environment.Exit(0);
-        }
-
-        private static void DisplayWelcomeScreen()
-        {
-            DisplayConsoleUI("Welcome to The Finch Project");
-            Console.WriteLine("Welcome to my Finch Project. I hope you enjoy this program. ");
-            DisplayContinuePrompt();
         }
 
         #endregion
