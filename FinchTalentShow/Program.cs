@@ -1772,8 +1772,8 @@ namespace FinchTalentShow
         /// <returns>Returns the temp converted to Farenheight</returns>
         private static double ConvertToF(double temp)
         {
-            temp = (temp * 1.8) + 32;
-            return temp;
+            // TODO Check This and delete the other 1524
+            return (temp * 1.8) + 32;
         }
 
         #endregion
@@ -2162,7 +2162,7 @@ namespace FinchTalentShow
         }
 
         #endregion
-
+        // todo check connection logic screen display
         #region User Validation
 
         /// <summary>
