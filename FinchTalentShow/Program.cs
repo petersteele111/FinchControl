@@ -1,7 +1,6 @@
 ﻿using FinchAPI;
 using System;
 using System.Collections.Generic;
-using System.Linq;
 
 namespace FinchTalentShow
 {
@@ -286,12 +285,15 @@ namespace FinchTalentShow
                     DisplayConnectFinch();
                     break;
                 case Menu.TalentShow:
+                    DisplayTalentShowMenuInstructions();
                     GetTalentShowMenuOption(DisplayTalentShowMenu());
                     break;
                 case Menu.DataRecorder:
+                    DisplayDataRecorderMenuInstructions();
                     GetDataRecorderMenuOption(DisplayDataRecorderMenu());
                     break;
                 case Menu.AlarmSystem:
+                    DisplayAlarmSystemInstructions();
                     GetDisplayAlarmSystemMenuOption(DisplayAlarmSystemMenu());
                     DisplayContinuePrompt();
                     break;
@@ -588,6 +590,7 @@ namespace FinchTalentShow
                     break;
             }
         }
+
 
         #endregion
 
@@ -934,6 +937,7 @@ namespace FinchTalentShow
         private static (int r, int g, int b, int time) GetLEDParams()
         {
             DisplayConsoleUI("Set LED Parameters");
+            Console.ForegroundColor = ConsoleColor.Green;
             int r = IsValidInt("Enter value for Red LED <0(Off) - 255(Max Brightness)>: ", 0, 255);
             int g = IsValidInt("Enter Value for Green LED <0(Off) - 255(Max Brightness)>: ", 0, 255);
             int b = IsValidInt("Enter Value for Blue LED <0(Off) - 255(Max Brightness)>: ", 0, 255);
@@ -984,7 +988,7 @@ namespace FinchTalentShow
         private static void LEDBlink()
         {
             var (r, g, b, time) = GetLEDParams();
-
+            Console.ForegroundColor = ConsoleColor.Green;
             Console.Write("Enter the number of blinks, 0 is infinite: ");
             int.TryParse(Console.ReadLine(), out int numberOfBlinks);
             if (numberOfBlinks == 0)
@@ -1054,27 +1058,6 @@ namespace FinchTalentShow
             }
         }
 
-        /// <summary>
-        /// LED Talent Show Menu Instructions/Description
-        /// </summary>
-        private static void DisplayLEDMenuInstructions()
-        {
-            DisplayConsoleUI("LED Menu Instructions");
-            Console.ForegroundColor = ConsoleColor.Cyan;
-            Console.WriteLine(@"
-     The LED Menu has several different components. 
-
-     1. You can turn the LED On for a specified color (Mix between red, green, and blue)
-     2. You can make the LED Blink for a specified amount of time the LED is ON and # of Blinks
-     3. You can have multiple LED colors blink for varying times (predefined time and pattern)
-     4. You can have the LED Pulse all colors. Goes from off to red, red to off, off to green, green to off,
-        off to blue, and finally blue to off. Cycles through these colors once (predefined timing)
-
-     This menu is to highlight some of the Finch's abilities regarding the LED Light
-");
-            DisplayContinuePrompt();
-        }
-
         #endregion
 
         #region Buzzer Control
@@ -1086,6 +1069,7 @@ namespace FinchTalentShow
         private static (int hertz, int time) GetBuzzerParams()
         {
             DisplayConsoleUI("Get Buzzer Parameters");
+            Console.ForegroundColor = ConsoleColor.Green;
             int hertz = IsValidInt("Please enter the Frequency of the Buzzer (hertz): ", 0, 22000);
             int time = IsValidInt("Please enter the length of time for the Buzzer to be on (seconds): ", 0, 100000);
             time *= 1000;
@@ -1197,23 +1181,6 @@ namespace FinchTalentShow
             SetBuzzerOn(352, 1000);
         }
 
-        /// <summary>
-        /// Displays the Buzzer Talent Show Menu Instructions
-        /// </summary>
-        private static void DisplayBuzzerMenuInstructions()
-        {
-            DisplayConsoleUI("Buzzer Menu Instructions");
-            Console.ForegroundColor = ConsoleColor.Cyan;
-            Console.WriteLine(@"
-     The Buzzer Menu has several different components.
-     
-     1. You can turn the Buzzer on for a specified amount of time
-     2. You can play the Star Wars Theme song
-     3. You can play the Happy Birthday song
-");
-            DisplayContinuePrompt();
-        }
-
         #endregion
 
         #region Wheels Control
@@ -1225,6 +1192,7 @@ namespace FinchTalentShow
         private static (int left, int right, int time) GetWheelsParams()
         {
             DisplayConsoleUI("Set Wheel Parameters");
+            Console.ForegroundColor = ConsoleColor.Green;
             int left = IsValidInt("Enter the speed of the Left Wheel <0(Stopped) - 255(Full Speed)>: ", 0, 255);
             int right = IsValidInt("Enter the speed of the Right Wheel <0(Stopped) - 255(Full Speed)>", 0, 255);
             int time = IsValidInt("Enter the time for the Finch Robot to Drive (seconds): ", 0, 100000);
@@ -1274,25 +1242,6 @@ namespace FinchTalentShow
             myFinch.setMotors(100, 0);
             myFinch.wait(1000);
             myFinch.setMotors(0, 0);
-        }
-
-        /// <summary>
-        /// Displays the Wheel Menu Instructions
-        /// </summary>
-        private static void DisplayWheelMenuInstructions()
-        {
-            DisplayConsoleUI("Wheel Menu Instructions");
-            Console.ForegroundColor = ConsoleColor.Cyan;
-            Console.WriteLine(@"
-     The Wheel Menu has several different components.
-    
-     1. You can move the Finch forward for a specified amount of time
-     2. You can move the Finch backward for a specified amount of time
-     3. You can turn the Finch right 90 degrees (prespecified)
-     4. You can turn the Finch left 90 degrees (prespecified)
-
-");
-            DisplayContinuePrompt();
         }
 
         #endregion
@@ -1414,7 +1363,7 @@ namespace FinchTalentShow
         /// <returns>Returns tuple with double array of sensorData and bool for Farenheight to Celcius</returns>
         private static (double[] sensorData, bool CtoFa) GetTempSensorData()
         {
-            var (dataPoints, time) = GetTempSensorParams();
+            var (time, dataPoints) = GetTempSensorParams();
             bool CtoFa = CtoF();
             double[] sensorData = new double[dataPoints];
             for (int i = 0; i < dataPoints; i++)
@@ -1538,6 +1487,7 @@ namespace FinchTalentShow
         private static (int time, int lightLowerThreshold, int lightUpperThreshold, double tempLowerThreshold, double tempUpperThreshold) GetMultipleAlarmSystemParams(string alarmType)
         {
             DisplayConsoleUI("Get Both Light and Temp Alarm System Parameters");
+            Console.ForegroundColor = ConsoleColor.Green;
             int lightLowerThreshold = 0;
             int lightUpperThreshold = 0;
             double tempLowerThreshold = 0;
@@ -1643,7 +1593,7 @@ namespace FinchTalentShow
             var (time, _, _, tempLowerThreshold, tempUpperThreshold) = GetMultipleAlarmSystemParams(alarmType);
             DisplayConsoleUI("Temp Alarm System Active");
             int count = 1;
-            double ambientTemp = ConvertToF(myFinch.getTemperature());
+            double ambientTemp = ConvertCtoF(myFinch.getTemperature());
             Console.WriteLine();
             Console.WriteLine($"Lower Temp Threshold = {tempLowerThreshold}");
             Console.WriteLine($"Upper Temp Threshold = {tempUpperThreshold}");
@@ -1654,7 +1604,7 @@ namespace FinchTalentShow
             {
                 while (true)
                 {
-                    double currentTempReading = ConvertToF(myFinch.getTemperature());
+                    double currentTempReading = ConvertCtoF(myFinch.getTemperature());
                     Console.Write("\r" + new string(' ', Console.WindowWidth - 1) + "\r");
                     Console.Write($"Current Temp Sensor Value = {currentTempReading:F2}");
                     myFinch.wait(1000);
@@ -1703,7 +1653,7 @@ namespace FinchTalentShow
             var (time, lightLowerThreshold, lightUpperThreshold, tempLowerThreshold, tempUpperThreshold) = GetMultipleAlarmSystemParams(alarmType);
             DisplayConsoleUI("Light and Temp Alarm System Active");
             int count = 1;
-            double ambientTemp = ConvertToF(myFinch.getTemperature());
+            double ambientTemp = ConvertCtoF(myFinch.getTemperature());
             int ambientLight = myFinch.getLeftLightSensor();
             Console.WriteLine();
             Console.WriteLine($"Lower Light Threshold = {lightLowerThreshold}");
@@ -1719,7 +1669,7 @@ namespace FinchTalentShow
             {
                 while (true)
                 {
-                    double currentTempReading = ConvertToF(myFinch.getTemperature());
+                    double currentTempReading = ConvertCtoF(myFinch.getTemperature());
                     int currentLightReading = myFinch.getLeftLightSensor();
                     Console.SetCursorPosition(0, 15);
                     Console.Write("\r" + new string(' ', Console.WindowWidth - 1) + "\r");
@@ -1765,16 +1715,6 @@ namespace FinchTalentShow
             }
         }
 
-        /// <summary>
-        /// Converts the temp from the Finch to Farenheight
-        /// </summary>
-        /// <param name="temp">The temp in C as returned by the Finch</param>
-        /// <returns>Returns the temp converted to Farenheight</returns>
-        private static double ConvertToF(double temp)
-        {
-            // TODO Check This and delete the other 1524
-            return (temp * 1.8) + 32;
-        }
 
         #endregion
 
@@ -1787,6 +1727,7 @@ namespace FinchTalentShow
         private static (int wheelSpeed, int r, int g, int b, int hertz) GetUserControlParams()
         {
             DisplayConsoleUI("User Control Parameters");
+            Console.ForegroundColor = ConsoleColor.Green;
             int wheelSpeed = IsValidInt("Please enter a speed for the finch < 1=(slow) - 255=(Max Speed) >: ", 1, 255);
             int r = IsValidInt("Please enter the brightness for the RED LED < 0=(Off) - 255=(Full Brightness) >: ", 0, 255);
             int g = IsValidInt("Please enter the brightness for the GREEN LED < 0=(Off) - 255= (Full Brightness) >: ", 0, 255);
@@ -1985,6 +1926,7 @@ namespace FinchTalentShow
         private static List<Tuple<UserControlCommands, int>> ClearUserControlCommandList(List<Tuple<UserControlCommands, int>> commands)
         {
             DisplayConsoleUI("Clear User Control Commands");
+            Console.ForegroundColor = ConsoleColor.Green;
             Console.Write("Are you sure you wish to clear the command list [Y]es or [N]o: ");
             string userResponse = Console.ReadLine().ToUpper().Trim(); 
             if (userResponse == "Y" || userResponse == "YES")
@@ -2004,70 +1946,6 @@ namespace FinchTalentShow
             return commands;
         }
 
-        /// <summary>
-        /// Displays the User Instructions on how to program the Finch
-        /// </summary>
-        private static void DisplayUserCommandsInstructions()
-        {
-            DisplayConsoleUI("User Command Instructions", 35);
-            Console.ForegroundColor = ConsoleColor.Cyan;
-            Console.WriteLine(@"
-
-     On the next screen, you will be presented with a list of commands you may enter to control your finch.
-     Please read the following instructions carefully for optimum results.
-
-  1. Select the numeric (number) value of the command you wish to add to the list and press <Enter>.
-
-  2. Please input the time (in seconds) you wish for the command to run and then press <Enter>.
-
-  3. Please note, that if you run the Motors, LED, or Buzzer and do not specify the proper off command, 
-     they will run indefinitely. 
-
-  4. I advise you specify an Off condition to prevent the Finch from running indefinitely. If you happen to do so,
-     please hit <CTRL> + C
-
-  5. For instances that you are turning off the LED, Buzzer, or Motor, you should set the run time seconds to 0 
-     so you do not need to wait until the next command is executed. If you wish to pause, after turning something
-     off, then specify the time as required before the next command runs.
-
-  6. You may enter as many commands as you wish. 
-
-  7. When you are finished, you must select option 14 (Done) and enter any time value you wish. Preferrably 0. 
-
-  8. After you have entered the commands, you will be taken back to the Control Screen, where you may view the
-     full list of commands in order, clear the list and start over, or execute the commands and begin your program. 
-
-  I hope you enjoy this program and have fun playing around with the Finch. Thank you!
-");
-            DisplayContinuePrompt();
-        }
-
-        /// <summary>
-        /// Displays the Main User Control instructions
-        /// </summary>
-        private static void DisplayUserControlInstructions()
-        {
-            DisplayConsoleUI("User Control Instructions");
-            Console.ForegroundColor = ConsoleColor.Cyan;
-            Console.WriteLine(@"
-
-     Welcome to the User Control portion of the Finch Robot program!
-     These instructions will guide you on how to properly utilize this section of the program.
-
-  1. On the next screen, you will be asked to input some base parameters for the Finch Robot.
-  2. Please enter the speed of the robot. Values range from 0-255. 0 being dead stopped, and 255 
-     being max speed.
-  3. Next you will enter the LED value for the RED LED. 0 is off, and 255 is Max Brightness.
-  4. Next you will enter the LED value for the GREEN LED. Same as above.
-  5. Next you will enter the LED value for the BLUE LED. Same as above.
-  6. Next you will enter the frequency(tone) of the buzzer. 0 is off, and 22000 is high pitched.
-  7. After this, you will be taken to the User Control Panel, where you can enter commands,
-     view the commands, execute the commands, clear the commands, or re-enter the default params above.
-  8. I hope you enjoy this program!
-");
-            DisplayContinuePrompt();
-        }
-
         #endregion
 
         #endregion
@@ -2079,6 +1957,7 @@ namespace FinchTalentShow
         private static void DisplayConnectFinch()
         {
             DisplayConsoleUI("Let's get connected");
+            Console.ForegroundColor = ConsoleColor.Cyan;
             Console.WriteLine("Let's get your Finch connected before proceeding further.");
             Console.WriteLine();
             Console.SetCursorPosition(1, 8);
@@ -2086,18 +1965,23 @@ namespace FinchTalentShow
             DisplayContinuePrompt();
             if (!ConnectFinch())
             {
+                DisplayConsoleUI("Error Cannot Connect");
+                Console.ForegroundColor = ConsoleColor.Cyan;
                 Console.WriteLine("Sorry I am unable to connect to the Finch at this time.");
                 Console.WriteLine();
                 Console.SetCursorPosition(1, 7);
                 Console.WriteLine("Please check that the cable is connected properly and that Windows see's your device");
                 Console.SetCursorPosition(1, 9);
-                Console.WriteLine("Unfortunately, I have to Quit the application. Please try again. ");
+                Console.WriteLine("Unfortunately, I have to Quit the application since the Finch cannot be connected after the fact.");
+                Console.SetCursorPosition(1,11);
+                Console.WriteLine("Please try again.");
                 DisplayContinuePrompt();
                 Environment.Exit(0);
             }
             else
             {
                 DisplayConsoleUI("Finch is connected");
+                Console.ForegroundColor = ConsoleColor.Cyan;
                 Console.WriteLine("Yay, I can see your Finch!");
                 DisplayContinuePrompt();
             }
@@ -2133,11 +2017,13 @@ namespace FinchTalentShow
         private static void DisplayDisconnectFinch()
         {
             DisplayConsoleUI("Let's get disconnected!");
+            Console.ForegroundColor = ConsoleColor.Cyan;
             Console.WriteLine("Let's get your Finch disconnected. I will disconnect your Finch and Validate it is disconnected next.");
             DisplayContinuePrompt();
             if (DisconnectFinch())
             {
                 DisplayConsoleUI("Finch is disconnected");
+                Console.ForegroundColor = ConsoleColor.Cyan;
                 Console.WriteLine("Sweet, You are Disconnected. I don't see a Finch Robot anymore.");
                 DisplayContinuePrompt();
             }
@@ -2162,7 +2048,183 @@ namespace FinchTalentShow
         }
 
         #endregion
-        // todo check connection logic screen display
+
+        #region Instruction Screens
+
+        /// <summary>
+        /// Displays the Talent Show Menu Instructions
+        /// </summary>
+        private static void DisplayTalentShowMenuInstructions()
+        {
+            DisplayConsoleUI("Talent Show Menu Instructions");
+            Console.ForegroundColor = ConsoleColor.Cyan;
+            Console.WriteLine(@"
+     Welcome to the Talent Show portion of the program!
+     On the next screen, you will be prompted to select what talent show control you want to use.
+
+     1. LED Menu allows you to control the Finch's LED various ways
+     2. The Buzzer Menu allows you to control the Finch's Buzzer various ways
+     3. The Wheels Menu allows you to control the Finch's movement various ways
+     I hope you enjoy this portion of the program!
+");
+            DisplayContinuePrompt();
+        }
+
+        /// <summary>
+        /// LED Talent Show Menu Instructions/Description
+        /// </summary>
+        private static void DisplayLEDMenuInstructions()
+        {
+            DisplayConsoleUI("LED Menu Instructions");
+            Console.ForegroundColor = ConsoleColor.Cyan;
+            Console.WriteLine(@"
+     The LED Menu has several different components. 
+
+     1. You can turn the LED On for a specified color (Mix between red, green, and blue)
+     2. You can make the LED Blink for a specified amount of time the LED is ON and # of Blinks
+     3. You can have multiple LED colors blink for varying times (predefined time and pattern)
+     4. You can have the LED Pulse all colors. Goes from off to red, red to off, off to green, green to off,
+        off to blue, and finally blue to off. Cycles through these colors once (predefined timing)
+
+     This menu is to highlight some of the Finch's abilities regarding the LED Light
+");
+            DisplayContinuePrompt();
+        }
+
+        /// <summary>
+        /// Displays the Buzzer Talent Show Menu Instructions
+        /// </summary>
+        private static void DisplayBuzzerMenuInstructions()
+        {
+            DisplayConsoleUI("Buzzer Menu Instructions");
+            Console.ForegroundColor = ConsoleColor.Cyan;
+            Console.WriteLine(@"
+     The Buzzer Menu has several different components.
+     
+     1. You can turn the Buzzer on for a specified amount of time
+     2. You can play the Star Wars Theme song
+     3. You can play the Happy Birthday song
+");
+            DisplayContinuePrompt();
+        }
+
+        /// <summary>
+        /// Displays the Wheel Menu Instructions
+        /// </summary>
+        private static void DisplayWheelMenuInstructions()
+        {
+            DisplayConsoleUI("Wheel Menu Instructions");
+            Console.ForegroundColor = ConsoleColor.Cyan;
+            Console.WriteLine(@"
+     The Wheel Menu has several different components.
+    
+     1. You can move the Finch forward for a specified amount of time
+     2. You can move the Finch backward for a specified amount of time
+     3. You can turn the Finch right 90 degrees (prespecified)
+     4. You can turn the Finch left 90 degrees (prespecified)
+
+");
+            DisplayContinuePrompt();
+        }
+
+        /// <summary>
+        /// Displays the Data Recorder Menu Instructions
+        /// </summary>
+        private static void DisplayDataRecorderMenuInstructions()
+        {
+            DisplayConsoleUI("Data Recorder Menu Instructions");
+            Console.ForegroundColor = ConsoleColor.Cyan;
+            Console.WriteLine(@"
+     The Data Recorder Menu has several components.
+     1. The Light Sensor Control allows you to collect RAW or Averaged Light Sensor data at 
+        specified intervals and for a specified amount of data points.
+     2. The Temp Sensor Control allows you to collect RAW temp readings in either 
+        Celcius or Farenheight.
+     I hope you enjoy this program!
+");
+            DisplayContinuePrompt();
+        }
+
+        /// <summary>
+        /// Displays the Alarm System Instructions
+        /// </summary>
+        private static void DisplayAlarmSystemInstructions()
+        {
+            DisplayConsoleUI("Alarm System Instructions");
+            Console.ForegroundColor = ConsoleColor.Cyan;
+            Console.WriteLine(@"
+     The Alarm System Menu has several different components.
+
+     1. The Light Sensor alarm allows you to monitor a lower and upper limit of the light sensor
+        and trigger an alarm when either of those thresholds are crossed.
+     2. The Temp Sensor alarm allows you to monitor a lower and upper limit of the temp sensor
+        and trigger an alarm when either of those thresholds are crossed.
+     3. You can also monitor both the Light Sensor and Temp sensor simultaneously with separate
+        lower and upper limits for each sensor to monitor (4 in total). When any threshold is 
+        crossed, an alarm is triggered.");
+
+            DisplayContinuePrompt();
+        }
+
+        /// <summary>
+        /// Displays the User Instructions on how to program the Finch
+        /// </summary>
+        private static void DisplayUserCommandsInstructions()
+        {
+            DisplayConsoleUI("User Command Instructions");
+            Console.ForegroundColor = ConsoleColor.Cyan;
+            Console.WriteLine(@"
+
+     On the next screen, you will be presented with a list of commands you may enter to control your finch.
+     Please read the following instructions carefully for optimum results.
+  1. Select the numeric (number) value of the command you wish to add to the list and press <Enter>.
+  2. Please input the time (in seconds) you wish for the command to run and then press <Enter>.
+  3. Please note, that if you run the Motors, LED, or Buzzer and do not specify the proper off command, 
+     they will run indefinitely. 
+  4. I advise you specify an Off condition to prevent the Finch from running indefinitely. If you en up with an
+     infinite loop please hit <CTRL> + C
+  5. For instances that you are turning off the LED, Buzzer, or Motor, you should set the run time seconds to 0 
+     so you do not need to wait until the next command is executed. If you wish to pause, after turning something
+     off, then specify the time as required before the next command runs.
+  6. You may enter as many commands as you wish. 
+  7. When you are finished, you must select option 14 (Done) and enter any time value you wish. Preferrably 0. 
+  8. After you have entered the commands, you will be taken back to the Control Screen, where you may view the
+     full list of commands in order, clear the list and start over, or execute the commands and begin your program. 
+  I hope you enjoy this program and have fun playing around with the Finch. Thank you!
+
+
+");
+            DisplayContinuePrompt();
+        }
+
+        /// <summary>
+        /// Displays the Main User Control instructions
+        /// </summary>
+        private static void DisplayUserControlInstructions()
+        {
+            DisplayConsoleUI("User Control Instructions");
+            Console.ForegroundColor = ConsoleColor.Cyan;
+            Console.WriteLine(@"
+
+     Welcome to the User Control portion of the Finch Robot program!
+     These instructions will guide you on how to properly utilize this section of the program.
+
+  1. On the next screen, you will be asked to input some base parameters for the Finch Robot.
+  2. Please enter the speed of the robot. Values range from 0-255. 0 being dead stopped, and 255 
+     being max speed.
+  3. Next you will enter the LED value for the RED LED. 0 is off, and 255 is Max Brightness.
+  4. Next you will enter the LED value for the GREEN LED. Same as above.
+  5. Next you will enter the LED value for the BLUE LED. Same as above.
+  6. Next you will enter the frequency(tone) of the buzzer. 0 is off, and 22000 is high pitched.
+  7. After this, you will be taken to the User Control Panel, where you can enter commands,
+     view the commands, execute the commands, clear the commands, or re-enter the default params above.
+  8. I hope you enjoy this program!
+");
+            DisplayContinuePrompt();
+        }
+
+        #endregion
+
         #region User Validation
 
         /// <summary>
