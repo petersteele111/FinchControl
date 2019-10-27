@@ -645,7 +645,7 @@ namespace FinchTalentShow
                     GetTempSensorMenuOption(DisplayTempSensorMenu());
                     break;
                 case DataRedcorderMenu.Back:
-                    DisplayDataRecorderMenu();
+                    GetMenuOption(DisplayMainMenu());
                     break;
                 default:
                     DisplayConsoleUI("Invlaid Response");
@@ -763,7 +763,7 @@ namespace FinchTalentShow
                     DisplayTempSensorData();
                     break;
                 case TempSensorMenu.Back:
-                    DisplayDataRecorderMenu();
+                    GetDataRecorderMenuOption(DisplayDataRecorderMenu());
                     break;
                 default:
                     DisplayConsoleUI("Invlaid Response");
