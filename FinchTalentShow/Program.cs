@@ -1,6 +1,8 @@
 ﻿using FinchAPI;
 using System;
 using System.Collections.Generic;
+using System.Text.RegularExpressions;
+using System.IO;
 
 namespace FinchTalentShow
 {
@@ -143,6 +145,12 @@ namespace FinchTalentShow
             Done
         }
 
+        public enum Login : byte
+        {
+            Login = 1,
+            Register
+        }
+
         #endregion
 
         #region Main method of the program
@@ -154,13 +162,16 @@ namespace FinchTalentShow
         /// </summary>
         static void Main()
         {
+            bool IsLoggedIn = false;
             DisplayWelcomeScreen();
-            while (true)
+            GetUserAuthMenuOption(DisplayUserAuth());
+            while (IsLoggedIn)
             {
                 DisplayConsoleUI("Finch Control v1.0");
                 GetMenuOption(DisplayMainMenu());
             }
         }
+
 
         #endregion
 
@@ -2045,6 +2056,144 @@ namespace FinchTalentShow
             {
                 return disconnected;
             }
+        }
+
+        #endregion
+
+        #region User Authentication
+
+        private static int DisplayUserAuth()
+        {
+            int userResponse = IsValidMenuOption("     User Authentication", @"
+                                             
+
+
+
+
+
+                                       
+
+                                                   1. Login
+
+                                                   2. Register
+
+
+
+
+
+
+
+
+
+
+  Option (1-2): ", 1, 2);
+            return userResponse;
+        }
+
+        private static void GetUserAuthMenuOption(int option)
+        {
+            Login menuChoice = (Login)option;
+
+            switch (menuChoice)
+            {
+                case Login.Login:
+                    UserLogin();
+                    break;
+                case Login.Register:
+                    Register();
+                    break;
+                default:
+                    break;
+            }
+        }
+
+        private static void UserLogin()
+        {
+            DisplayConsoleUI("Login");
+
+            Console.Write("Username: ");
+            string userName = Console.ReadLine();
+            Console.Write("Password: ");
+            string password = Console.ReadLine(); 
+
+
+            bool IsValid = IsUserValid(userName, password);
+            if (IsValid)
+            {
+                return true;
+            }
+            else
+            {
+                return false;
+            }
+
+        }
+
+        private static bool IsUserValid(string userName, string password)
+        {
+            string dataPath = "Data\\userdata.txt";
+
+            string[] userData = File.ReadAllLines(dataPath);
+
+            foreach (string info in userData)
+            {
+                string[] userInfo = info.Split(':');
+                string storedUserName = userInfo[1];
+                string passwordHash = userInfo[3];
+            }
+
+            if (userName.Equals(storedUserName))
+            {
+
+            }
+
+        }
+
+        /// <summary>
+        /// Registers the User to the System 
+        /// Asks the user for a username and checks it against a regex
+        /// Asks the user for a password and secures it with PBKDF2 and a random SALT
+        /// If the username meets the requirements, the username and password are stored in the userData file
+        /// </summary>
+        private static void Register()
+        {
+            DisplayConsoleUI("        Register");
+
+            string dataPath = "Data\\userData.txt";
+            string newLine = "\n";
+
+            Console.WriteLine();
+            Console.ForegroundColor = ConsoleColor.Cyan;
+            Console.WriteLine("Username must be between 1-15 characters");
+            Console.WriteLine("First character must start with a letter");
+            Console.WriteLine("Can contain letters, numbers, and special chars (_ - .)");
+            Console.WriteLine("Cannot end with (_ - .)");
+            Console.ForegroundColor = ConsoleColor.Green;
+            Console.WriteLine();
+           
+            Console.Write("Username: ");
+            string userName = Console.ReadLine();
+            Regex regex = new Regex(@"^(?=[a-zA-Z])[-\w.]{0,15}([a-zA-Z\d]|(?<![-.])_)$");
+            bool IsValid = regex.IsMatch(userName);
+
+            Console.Write("Password: ");
+            string password = Console.ReadLine();
+
+            var passwordSalt = CryptoService.GenerateSalt();
+            var passwordHash = CryptoService.ComputeHash(password, passwordSalt);
+
+            if (IsValid)
+            {
+                File.AppendAllText(dataPath, "Username:" + userName + newLine);
+                File.AppendAllText(dataPath, "Password:" + Convert.ToBase64String(passwordHash));
+            }
+            else
+            {
+                Console.WriteLine("Sorry, that username is not valid. ");
+                Console.WriteLine("First character must be a letter. Remaining characters can be letters, numbers, _, -, and .");
+                Console.WriteLine("Cannot end with an _, -, . and must be between 1 and 15 characters");
+            }
+            Console.ReadLine(); 
         }
 
         #endregion
