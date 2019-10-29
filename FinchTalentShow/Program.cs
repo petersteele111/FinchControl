@@ -246,6 +246,7 @@ namespace FinchTalentShow
         private static void DisplayClosingScreen()
         {
             DisplayConsoleUI("Goodbye");
+            Console.ForegroundColor = ConsoleColor.Cyan;
             Console.WriteLine("So our time has sadly come to an end. I enjoyed working with your Finch today!");
             Console.WriteLine();
             Console.SetCursorPosition(1, 7);
@@ -2217,6 +2218,7 @@ namespace FinchTalentShow
                 if (count < MAX_TRIES)
                 {
                     DisplayConsoleUI("Login to the Finch Program");
+                    Console.ForegroundColor = ConsoleColor.Green;
                     Console.WriteLine();
                     Console.Write("Username: ");
                     string userName = Console.ReadLine();
@@ -2227,6 +2229,9 @@ namespace FinchTalentShow
 
                     if (IsValid)
                     {
+                        Console.WriteLine();
+                        Console.WriteLine("Login Successfull!");
+                        DisplayContinuePrompt();
                         IsValid = true;
                     }
                     else
@@ -2309,6 +2314,7 @@ namespace FinchTalentShow
             if (IsValid)
             {
                 WriteToUserDataFile(DATAPATH, userName, passwordHash, passwordSalt);
+                DisplayContinuePrompt();
             }
             else
             {
@@ -2319,7 +2325,6 @@ namespace FinchTalentShow
                 Console.WriteLine("First character must be a letter. Remaining characters can be letters, numbers, _, -, and .");
                 Console.WriteLine("Cannot end with an _, -, . and must be between 1 and 15 characters");
             }
-            Console.ReadLine();
         }
 
         /// <summary>
