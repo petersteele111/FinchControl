@@ -157,21 +157,42 @@ namespace FinchTalentShow
 
         readonly static Finch myFinch = new Finch();
 
+
         /// <summary>
         /// Main Method of the application
         /// </summary>
         static void Main()
         {
-            bool IsLoggedIn = false;
             DisplayWelcomeScreen();
-            GetUserAuthMenuOption(DisplayUserAuth());
+            const string DIR = "Data";
+            const string DATAPATH = "Data\\userData.txt";
+            bool IsLoggedIn = false;
+            bool directoryExists = false;
+
+            if (!directoryExists)
+            {
+                directoryExists = CheckIfDirectoryExists(DATAPATH, DIR);
+                if (directoryExists)
+                {
+                    directoryExists = true;
+                }
+                else
+                {
+                    directoryExists = false;
+                }
+            }
+
+            while (!IsLoggedIn && directoryExists)
+            {
+                IsLoggedIn = GetUserAuthMenuOption(DisplayUserAuth(), DATAPATH);
+            }
+
             while (IsLoggedIn)
             {
                 DisplayConsoleUI("Finch Control v1.0");
                 GetMenuOption(DisplayMainMenu());
             }
         }
-
 
         #endregion
 
@@ -1786,7 +1807,7 @@ namespace FinchTalentShow
                 if (command != UserControlCommands.None)
                 {
                     int counter = 1;
-                    commands.Add( new Tuple<UserControlCommands, int>(command, time));
+                    commands.Add(new Tuple<UserControlCommands, int>(command, time));
                     DisplayConsoleUI("Command Added", commands.Count + 9);
                     Console.WriteLine();
                     foreach (Tuple<UserControlCommands, int> userCommand in commands)
@@ -1904,7 +1925,7 @@ namespace FinchTalentShow
                         break;
                     case UserControlCommands.Temp:
                         Console.WriteLine();
-                        Console.WriteLine("Current Temperature Reading: {0}°f",ConvertCtoF(myFinch.getTemperature()));
+                        Console.WriteLine("Current Temperature Reading: {0}°f", ConvertCtoF(myFinch.getTemperature()));
                         myFinch.wait(time);
                         break;
                     case UserControlCommands.Light:
@@ -1939,7 +1960,7 @@ namespace FinchTalentShow
             DisplayConsoleUI("Clear User Control Commands");
             Console.ForegroundColor = ConsoleColor.Green;
             Console.Write("Are you sure you wish to clear the command list [Y]es or [N]o: ");
-            string userResponse = Console.ReadLine().ToUpper().Trim(); 
+            string userResponse = Console.ReadLine().ToUpper().Trim();
             if (userResponse == "Y" || userResponse == "YES")
             {
                 commands.Clear();
@@ -1984,7 +2005,7 @@ namespace FinchTalentShow
                 Console.WriteLine("Please check that the cable is connected properly and that Windows see's your device");
                 Console.SetCursorPosition(1, 9);
                 Console.WriteLine("Unfortunately, I have to Quit the application since the Finch cannot be connected after the fact.");
-                Console.SetCursorPosition(1,11);
+                Console.SetCursorPosition(1, 11);
                 Console.WriteLine("Please try again.");
                 DisplayContinuePrompt();
                 Environment.Exit(0);
@@ -2062,6 +2083,36 @@ namespace FinchTalentShow
 
         #region User Authentication
 
+        /// <summary>
+        /// Checks if the Directory and userData.txt file exist
+        /// If not, it attempts to create them and returns true
+        /// If creation fails, the program exits.
+        /// </summary>
+        /// <returns>Returns true if the directory and file are present or can be created. Returns false is they cannot</returns>
+        private static bool CheckIfDirectoryExists(string DATAPATH, string DIR)
+        {
+            Directory.CreateDirectory(DIR);
+            if (!File.Exists(DATAPATH))
+            {
+                File.Create(DATAPATH).Dispose();
+            }
+            if (Directory.Exists(DIR) && File.Exists(DATAPATH))
+            {
+                return true;
+            }
+            else
+            {
+                Console.WriteLine("Sorry, I was not able to create the Directory or File for this authentication module. Please contact the developer. Exiting now.");
+                DisplayContinuePrompt();
+                Quit();
+            }
+            return false;
+        }
+
+        /// <summary>
+        /// Diaplys the User Login Screen
+        /// </summary>
+        /// <returns>Returns user menu choice</returns>
         private static int DisplayUserAuth()
         {
             int userResponse = IsValidMenuOption("     User Authentication", @"
@@ -2090,63 +2141,141 @@ namespace FinchTalentShow
             return userResponse;
         }
 
-        private static void GetUserAuthMenuOption(int option)
+        /// <summary>
+        /// Takes the user Menu Choice and performs the appropriate action
+        /// </summary>
+        /// <param name="option">user menu choice</param>
+        /// <param name="DATAPATH">path to userData.txt</param>
+        /// <returns>Returns Boolean if the user is logged in or not</returns>
+        private static bool GetUserAuthMenuOption(int option, string DATAPATH)
         {
             Login menuChoice = (Login)option;
-
+            bool IsLoggedIn = false;
             switch (menuChoice)
             {
                 case Login.Login:
-                    UserLogin();
-                    break;
+                    IsLoggedIn = CheckUserLogin(DATAPATH);
+                    return IsLoggedIn;
                 case Login.Register:
-                    Register();
-                    break;
+                    Register(DATAPATH);
+                    return IsLoggedIn;
                 default:
-                    break;
+                    return false;
             }
         }
 
-        private static void UserLogin()
+        /// <summary>
+        /// Checks if their are any registration entries for the userData file
+        /// </summary>
+        /// <returns>Returns true if there is content and false if the userData file is empty</returns>
+        private static bool CheckIfRegistered(string DATAPATH)
         {
-            DisplayConsoleUI("Login");
+            string[] userData = File.ReadAllLines(DATAPATH);
 
-            Console.Write("Username: ");
-            string userName = Console.ReadLine();
-            Console.Write("Password: ");
-            string password = Console.ReadLine(); 
-
-
-            bool IsValid = IsUserValid(userName, password);
-            if (IsValid)
+            if (userData.Length <= 0)
+            {
+                return false;
+            }
+            else
             {
                 return true;
+            }
+        }
+
+        /// <summary>
+        /// Displays the login screen for the user
+        /// </summary>
+        /// <returns>Returns if the user is registered or not</returns>
+        private static bool CheckUserLogin(string DATAPATH)
+        {
+            bool IsRegistered = CheckIfRegistered(DATAPATH);
+            if (!IsRegistered)
+            {
+                DisplayConsoleUI("You Need To Register!");
+                Console.WriteLine("You don't appear to have registered yet. Please Register first before logging in.");
+                DisplayContinuePrompt();
+                return false;
+            }
+            else
+            {
+                bool IsLoggedIn = LogIn();
+                return IsLoggedIn;
+            }
+        }
+
+        /// <summary>
+        /// Displays and attempts to log the user in
+        /// </summary>
+        /// <returns>Returns true if the user is logged in and false if they are not</returns>
+        private static bool LogIn()
+        {
+            bool IsValid = false;
+            int count = 0;
+            const int MAX_TRIES = 3;
+            while (!IsValid)
+            {
+                if (count < MAX_TRIES)
+                {
+                    DisplayConsoleUI("Login to the Finch Program");
+                    Console.WriteLine();
+                    Console.Write("Username: ");
+                    string userName = Console.ReadLine();
+                    Console.Write("Password: ");
+                    string password = Console.ReadLine();
+
+                    IsValid = IsValidPassword(userName, password);
+
+                    if (IsValid)
+                    {
+                        IsValid = true;
+                    }
+                    else
+                    {
+                        Console.WriteLine();
+                        Console.WriteLine("Incorrect Username or Password, please try again!");
+                        DisplayContinuePrompt();
+                        count++;
+                    }
+                }
+                else
+                {
+                    DisplayConsoleUI("ERROR: Failed to Log In");
+                    Console.WriteLine();
+                    Console.WriteLine("Sorry, you have failed to login too many times. Exiting the application.");
+                    DisplayContinuePrompt();
+                    Quit();
+                }
+            }
+            return true;
+        }
+
+        /// <summary>
+        /// Checks to see if the password is valid or not
+        /// This is done by using the stored Salt generated for the password when initially created and stored
+        /// I then use the KDF and Salt to recreate the key of the password and check each byte array byte by byte against each other
+        /// to see if they are the same. If they are the same, then the password is equal and valid. Return true
+        /// If they are not the same length or the same byte by byte, then the password is not equal, and thus returns false.
+        /// </summary>
+        /// <param name="userName">User name input by the user logging in</param>
+        /// <param name="password">password input by the user logging in</param>
+        /// <returns>Returns true if the password matches, and false if it does not</returns>
+        private static bool IsValidPassword(string userName, string password)
+        {
+            string[] userData = File.ReadAllLines("Data\\userData.txt");
+
+            string storedUserName = userData[0];
+            string storedPasswordHash = userData[1];
+            string storedPasswordSalt = userData[2];
+
+            if (storedUserName.Equals(userName))
+            {
+                bool IsValidPass = CryptoService.IsValidPassword(password, storedPasswordSalt, storedPasswordHash);
+                return IsValidPass;
             }
             else
             {
                 return false;
             }
-
-        }
-
-        private static bool IsUserValid(string userName, string password)
-        {
-            string dataPath = "Data\\userdata.txt";
-
-            string[] userData = File.ReadAllLines(dataPath);
-
-            foreach (string info in userData)
-            {
-                string[] userInfo = info.Split(':');
-                string storedUserName = userInfo[1];
-                string passwordHash = userInfo[3];
-            }
-
-            if (userName.Equals(storedUserName))
-            {
-
-            }
-
         }
 
         /// <summary>
@@ -2155,12 +2284,9 @@ namespace FinchTalentShow
         /// Asks the user for a password and secures it with PBKDF2 and a random SALT
         /// If the username meets the requirements, the username and password are stored in the userData file
         /// </summary>
-        private static void Register()
+        private static void Register(string DATAPATH)
         {
             DisplayConsoleUI("        Register");
-
-            string dataPath = "Data\\userData.txt";
-            string newLine = "\n";
 
             Console.WriteLine();
             Console.ForegroundColor = ConsoleColor.Cyan;
@@ -2170,30 +2296,57 @@ namespace FinchTalentShow
             Console.WriteLine("Cannot end with (_ - .)");
             Console.ForegroundColor = ConsoleColor.Green;
             Console.WriteLine();
-           
+
             Console.Write("Username: ");
             string userName = Console.ReadLine();
-            Regex regex = new Regex(@"^(?=[a-zA-Z])[-\w.]{0,15}([a-zA-Z\d]|(?<![-.])_)$");
-            bool IsValid = regex.IsMatch(userName);
+            bool IsValid = CheckIsValidUserName(userName);
 
             Console.Write("Password: ");
             string password = Console.ReadLine();
-
             var passwordSalt = CryptoService.GenerateSalt();
             var passwordHash = CryptoService.ComputeHash(password, passwordSalt);
 
             if (IsValid)
             {
-                File.AppendAllText(dataPath, "Username:" + userName + newLine);
-                File.AppendAllText(dataPath, "Password:" + Convert.ToBase64String(passwordHash));
+                WriteToUserDataFile(DATAPATH, userName, passwordHash, passwordSalt);
             }
             else
             {
-                Console.WriteLine("Sorry, that username is not valid. ");
+                DisplayConsoleUI("ERROR: Username not valid");
+                Console.ForegroundColor = ConsoleColor.Cyan;
+                Console.WriteLine();
+                Console.WriteLine($"Sorry, {userName} is not a valid username.");
                 Console.WriteLine("First character must be a letter. Remaining characters can be letters, numbers, _, -, and .");
                 Console.WriteLine("Cannot end with an _, -, . and must be between 1 and 15 characters");
             }
-            Console.ReadLine(); 
+            Console.ReadLine();
+        }
+
+        /// <summary>
+        /// Checks if the User Name entered is valid
+        /// </summary>
+        /// <param name="userName">User Name entered by the user</param>
+        /// <returns>Returns true if the userName is valid and false if it is not</returns>
+        private static bool CheckIsValidUserName(string userName)
+        {
+            Regex regex = new Regex(@"^(?=[a-zA-Z])[-\w.]{0,15}([a-zA-Z\d]|(?<![-.])_)$");
+            bool IsValid = regex.IsMatch(userName);
+            return IsValid;
+        }
+
+        /// <summary>
+        /// Writes the validated user information to the userData file
+        /// </summary>
+        /// <param name="DATAPATH">Path to the userData file</param>
+        /// <param name="userName">Chosen username</param>
+        /// <param name="passwordHash">Byte Array of the Password Key</param>
+        /// <param name="passwordSalt">Byte Array of the Password Salt</param>
+        private static void WriteToUserDataFile(string DATAPATH, string userName, byte[] passwordHash, byte[] passwordSalt)
+        {
+            string newLine = "\n";
+            File.WriteAllText(DATAPATH, userName + newLine);
+            File.AppendAllText(DATAPATH, Convert.ToBase64String(passwordHash) + newLine);
+            File.AppendAllText(DATAPATH, Convert.ToBase64String(passwordSalt));
         }
 
         #endregion
