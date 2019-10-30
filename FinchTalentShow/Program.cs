@@ -3,9 +3,10 @@ using System;
 using System.Collections.Generic;
 using System.Text.RegularExpressions;
 using System.IO;
+using System.Linq;
 using CryptoService;
 
-namespace FinchTalentShow
+namespace FinchControl
 {
     class Program
     {
@@ -15,7 +16,7 @@ namespace FinchTalentShow
          * Description: Finch Control program that performs many different tasks for the Finch
          * Author: Peter Steele
          * Created: October 1st, 2019
-         * Modified: Octovber 30th, 2019
+         * Modified: October 30th, 2019
          *************************************************************************************/
 
         #region Enums for Menu's
@@ -23,7 +24,7 @@ namespace FinchTalentShow
         /// <summary>
         /// Main Menu Enum
         /// </summary>
-        public enum Menu : byte
+        private enum Menu : byte
         {
             ConnectFinch = 1,
             TalentShow,
@@ -37,7 +38,7 @@ namespace FinchTalentShow
         /// <summary>
         /// Talent Show Menu enum
         /// </summary>
-        public enum TalentShowMenu : byte
+        private enum TalentShowMenu : byte
         {
             LED = 1,
             Buzzer,
@@ -48,7 +49,7 @@ namespace FinchTalentShow
         /// <summary>
         /// LED Menu enum
         /// </summary>
-        public enum LEDMenu : byte
+        private enum LEDMenu : byte
         {
             On = 1,
             Blink,
@@ -60,7 +61,7 @@ namespace FinchTalentShow
         /// <summary>
         /// Buzzer Menu enum
         /// </summary>
-        public enum BuzzerMenu : byte
+        private enum BuzzerMenu : byte
         {
             On = 1,
             StarWars,
@@ -71,7 +72,7 @@ namespace FinchTalentShow
         /// <summary>
         /// Wheels Menu enum
         /// </summary>
-        public enum WheelsMenu : byte
+        private enum WheelsMenu : byte
         {
             Forward = 1,
             Backward,
@@ -83,7 +84,7 @@ namespace FinchTalentShow
         /// <summary>
         /// DataRecorder Menu enum
         /// </summary>
-        public enum DataRedcorderMenu : byte
+        private enum DataRedcorderMenu : byte
         {
             Light = 1,
             Temp,
@@ -93,7 +94,7 @@ namespace FinchTalentShow
         /// <summary>
         /// Light Sensor Menu enum
         /// </summary>
-        public enum LightSensorMenu : byte
+        private enum LightSensorMenu : byte
         {
             Light = 1,
             Average,
@@ -103,7 +104,7 @@ namespace FinchTalentShow
         /// <summary>
         /// Temperature Sensor Menu enum
         /// </summary>
-        public enum TempSensorMenu : byte
+        private enum TempSensorMenu : byte
         {
             Temp = 1,
             Back
@@ -112,7 +113,7 @@ namespace FinchTalentShow
         /// <summary>
         /// Alarm System Menu enum
         /// </summary>
-        public enum AlarmSystemMenu : byte
+        private enum AlarmSystemMenu : byte
         {
             Light = 1,
             Temp,
@@ -123,7 +124,7 @@ namespace FinchTalentShow
         /// <summary>
         /// User Control Menu enum
         /// </summary>
-        public enum UserControlMenu : byte
+        private enum UserControlMenu : byte
         {
             Parameters = 1,
             InsertCommands,
@@ -136,7 +137,7 @@ namespace FinchTalentShow
         /// <summary>
         /// User Control Commands enum
         /// </summary>
-        public enum UserControlCommands : byte
+        private enum UserControlCommands : byte
         {
             None,
             MoveForward,
@@ -155,10 +156,11 @@ namespace FinchTalentShow
             Done
         }
 
-        public enum Login : byte
+        private enum Login : byte
         {
             Login = 1,
-            Register
+            Register,
+            Quit
         }
 
         #endregion
@@ -166,7 +168,6 @@ namespace FinchTalentShow
         #region Main method of the program
 
         static readonly Finch MyFinch = new Finch();
-
 
         /// <summary>
         /// Main Method of the application
@@ -2128,6 +2129,7 @@ namespace FinchTalentShow
 
                                                    2. Register
 
+                                                   3. Quit
 
 
 
@@ -2136,8 +2138,7 @@ namespace FinchTalentShow
 
 
 
-
-  Option (1-2): ", 1, 2);
+  Option (1-3): ", 1, 3);
             return userResponse;
         }
 
@@ -2158,6 +2159,10 @@ namespace FinchTalentShow
                     return IsLoggedIn;
                 case Login.Register:
                     Register(DATAPATH);
+                    return IsLoggedIn;
+                case Login.Quit:
+                    DisplayClosingScreen();
+                    Quit();
                     return IsLoggedIn;
                 default:
                     return false;
@@ -2202,10 +2207,10 @@ namespace FinchTalentShow
         /// <returns>Returns true if the user is logged in and false if they are not</returns>
         private static bool LogIn()
         {
-            bool isValid = false;
+            bool isValidUser = false;
             int count = 0;
             const int MAX_TRIES = 3;
-            while (!isValid)
+            while (!isValidUser)
             {
                 if (count < MAX_TRIES)
                 {
@@ -2215,16 +2220,19 @@ namespace FinchTalentShow
                     Console.Write("Username: ");
                     string userName = Console.ReadLine();
                     Console.Write("Password: ");
+                    Console.ForegroundColor = ConsoleColor.Black;
+                    Console.CursorVisible = false;
                     string password = Console.ReadLine();
 
-                    isValid = IsValidPassword(userName, password);
+                    isValidUser = IsValidUser(userName, password);
 
-                    if (isValid)
+                    Console.CursorVisible = true;
+                    Console.ForegroundColor = ConsoleColor.White;
+                    if (isValidUser)
                     {
                         Console.WriteLine();
                         Console.WriteLine("Login Successful!");
                         DisplayContinuePrompt();
-                        isValid = true;
                     }
                     else
                     {
@@ -2256,18 +2264,22 @@ namespace FinchTalentShow
         /// <param name="userName">User name input by the user logging in</param>
         /// <param name="password">password input by the user logging in</param>
         /// <returns>Returns true if the password matches, and false if it does not</returns>
-        private static bool IsValidPassword(string userName, string password)
+        private static bool IsValidUser(string userName, string password)
         {
             string[] userData = File.ReadAllLines("Data\\userData.txt");
 
-            string storedUserName = userData[0];
-            string storedPasswordHash = userData[1];
-            string storedPasswordSalt = userData[2];
-
-            if (storedUserName.Equals(userName))
+            foreach (var userInfo in userData)
             {
-                bool isValidPass = Crypto.IsValidPassword(password, storedPasswordSalt, storedPasswordHash);
-                return isValidPass;
+                string[] individualUsers = userInfo.Split(':');
+
+                if (individualUsers.Contains(userName))
+                {
+                    string storedPasswordHash = individualUsers[1];
+                    string storedPasswordSalt = individualUsers[2];
+
+                    bool isValidPass = Crypto.IsValidPassword(password, storedPasswordSalt, storedPasswordHash);
+                    return isValidPass;
+                }
             }
             return false;
         }
@@ -2295,11 +2307,8 @@ namespace FinchTalentShow
             string userName = Console.ReadLine();
             bool isValidUserName = CheckIsValidUserName(userName);
 
+            string password = GetPassword();
 
-            Console.Write("Password: ");
-            Console.ForegroundColor = ConsoleColor.Black;
-            Console.CursorVisible = false;
-            string password = Console.ReadLine();
             var passwordSalt = Crypto.GenerateSalt();
             var passwordHash = Crypto.ComputeHash(password, passwordSalt);
 
@@ -2308,6 +2317,7 @@ namespace FinchTalentShow
                 Console.ForegroundColor = ConsoleColor.White;
                 Console.CursorVisible = true;
                 WriteToUserDataFile(DATAPATH, userName, passwordHash, passwordSalt);
+                Console.ForegroundColor = ConsoleColor.Green;
                 Console.WriteLine("You are now registered!");
                 DisplayContinuePrompt();
             }
@@ -2322,6 +2332,53 @@ namespace FinchTalentShow
                 Console.WriteLine("Please try again!");
                 DisplayContinuePrompt();
             }
+        }
+
+        /// <summary>
+        /// Gets and checks the passwords for registration
+        /// </summary>
+        /// <returns>Returns the password</returns>
+        private static string GetPassword()
+        {
+            bool isPassMatch = false;
+            string password = "";
+
+            while (!isPassMatch)
+            {
+                Console.Write("Password: ");
+                Console.ForegroundColor = ConsoleColor.Black;
+                Console.CursorVisible = false;
+                password = Console.ReadLine();
+
+                Console.ForegroundColor = ConsoleColor.Green;
+                Console.Write("Retype your password: ");
+                Console.ForegroundColor = ConsoleColor.Black;
+                string password2 = Console.ReadLine();
+                Console.ForegroundColor = ConsoleColor.Green;
+                Console.CursorVisible = true;
+                if (password.Length == 0 || password2.Length == 0)
+                {
+                    Console.WriteLine();
+                    Console.WriteLine("Please enter a password!");
+                    Console.WriteLine();
+                }
+                else
+                {
+                    if (!password.Equals(password2))
+                    {
+                        Console.ForegroundColor = ConsoleColor.Green;
+                        Console.WriteLine();
+                        Console.WriteLine("Passwords do not match! Please try again.");
+                    }
+                    else
+                    {
+                        Console.WriteLine();
+                        Console.WriteLine("Passwords Match!");
+                        isPassMatch = true;
+                    }
+                }
+            }
+            return password;
         }
 
         /// <summary>
@@ -2346,9 +2403,7 @@ namespace FinchTalentShow
         private static void WriteToUserDataFile(string DATAPATH, string userName, byte[] passwordHash, byte[] passwordSalt)
         {
             string newLine = "\n";
-            File.WriteAllText(DATAPATH, userName + newLine);
-            File.AppendAllText(DATAPATH, Convert.ToBase64String(passwordHash) + newLine);
-            File.AppendAllText(DATAPATH, Convert.ToBase64String(passwordSalt));
+            File.AppendAllText(DATAPATH, userName + ":" + Convert.ToBase64String(passwordHash) + ":" + Convert.ToBase64String(passwordSalt) + newLine);
         }
 
         #endregion
