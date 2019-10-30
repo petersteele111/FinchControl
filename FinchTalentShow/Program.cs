@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Text.RegularExpressions;
 using System.IO;
+using CryptoService;
 
 namespace FinchTalentShow
 {
@@ -155,7 +156,7 @@ namespace FinchTalentShow
 
         #region Main method of the program
 
-        readonly static Finch myFinch = new Finch();
+        static readonly Finch MyFinch = new Finch();
 
 
         /// <summary>
@@ -166,28 +167,15 @@ namespace FinchTalentShow
             DisplayWelcomeScreen();
             const string DIR = "Data";
             const string DATAPATH = "Data\\userData.txt";
-            bool IsLoggedIn = false;
-            bool directoryExists = false;
-
-            if (!directoryExists)
+            bool isLoggedIn = false;
+            bool directoryExists = CheckIfDirectoryExists(DATAPATH, DIR);
+            
+            while (!isLoggedIn && directoryExists)
             {
-                directoryExists = CheckIfDirectoryExists(DATAPATH, DIR);
-                if (directoryExists)
-                {
-                    directoryExists = true;
-                }
-                else
-                {
-                    directoryExists = false;
-                }
+                isLoggedIn = GetUserAuthMenuOption(DisplayUserAuth(), DATAPATH);
             }
 
-            while (!IsLoggedIn && directoryExists)
-            {
-                IsLoggedIn = GetUserAuthMenuOption(DisplayUserAuth(), DATAPATH);
-            }
-
-            while (IsLoggedIn)
+            while (isLoggedIn)
             {
                 DisplayConsoleUI("Finch Control v1.0");
                 GetMenuOption(DisplayMainMenu());
@@ -987,8 +975,8 @@ namespace FinchTalentShow
         {
             var (r, g, b, time) = GetLEDParams();
 
-            myFinch.setLED(r, g, b);
-            myFinch.wait(time);
+            MyFinch.setLED(r, g, b);
+            MyFinch.wait(time);
         }
 
         /// <summary>
@@ -1000,8 +988,8 @@ namespace FinchTalentShow
         /// <param name="time"></param>
         private static void SetLEDOn(int r = 255, int g = 255, int b = 255, int time = 1000)
         {
-            myFinch.setLED(r, g, b);
-            myFinch.wait(time);
+            MyFinch.setLED(r, g, b);
+            MyFinch.wait(time);
 
         }
 
@@ -1011,8 +999,8 @@ namespace FinchTalentShow
         /// <param name="time">Specifies the wait time for the LED to be off. Used for blinking the LED</param>
         private static void SetLEDOff(int time = 500)
         {
-            myFinch.setLED(0, 0, 0);
-            myFinch.wait(time);
+            MyFinch.setLED(0, 0, 0);
+            MyFinch.wait(time);
         }
 
         /// <summary>
@@ -1116,9 +1104,9 @@ namespace FinchTalentShow
         {
             var (hertz, time) = GetBuzzerParams();
 
-            myFinch.noteOn(hertz);
-            myFinch.wait(time);
-            myFinch.noteOff();
+            MyFinch.noteOn(hertz);
+            MyFinch.wait(time);
+            MyFinch.noteOff();
         }
 
         /// <summary>
@@ -1128,9 +1116,9 @@ namespace FinchTalentShow
         /// <param name="time">Time to play tone</param>
         private static void SetBuzzerOn(int hertz, int time)
         {
-            myFinch.noteOn(hertz);
-            myFinch.wait(time);
-            myFinch.noteOff();
+            MyFinch.noteOn(hertz);
+            MyFinch.wait(time);
+            MyFinch.noteOff();
         }
 
         /// <summary>
@@ -1139,21 +1127,21 @@ namespace FinchTalentShow
         private static void BuzzerStarWars()
         {
             SetBuzzerOn(300, 500);
-            myFinch.wait(50);
+            MyFinch.wait(50);
             SetBuzzerOn(300, 500);
-            myFinch.wait(50);
+            MyFinch.wait(50);
             SetBuzzerOn(300, 500);
-            myFinch.wait(50);
+            MyFinch.wait(50);
             SetBuzzerOn(250, 500);
-            myFinch.wait(50);
+            MyFinch.wait(50);
             SetBuzzerOn(350, 250);
             SetBuzzerOn(300, 500);
-            myFinch.wait(50);
+            MyFinch.wait(50);
             SetBuzzerOn(250, 500);
-            myFinch.wait(50);
+            MyFinch.wait(50);
             SetBuzzerOn(350, 250);
             SetBuzzerOn(300, 500);
-            myFinch.wait(50);
+            MyFinch.wait(50);
         }
 
         /// <summary>
@@ -1162,55 +1150,55 @@ namespace FinchTalentShow
         private static void BuzzerHappyBirthday()
         {
             SetBuzzerOn(264, 125);
-            myFinch.wait(250);
+            MyFinch.wait(250);
             SetBuzzerOn(264, 125);
-            myFinch.wait(125);
+            MyFinch.wait(125);
             SetBuzzerOn(297, 500);
-            myFinch.wait(125);
+            MyFinch.wait(125);
             SetBuzzerOn(264, 500);
-            myFinch.wait(125);
+            MyFinch.wait(125);
             SetBuzzerOn(352, 500);
-            myFinch.wait(125);
+            MyFinch.wait(125);
             SetBuzzerOn(330, 1000);
-            myFinch.wait(250);
+            MyFinch.wait(250);
             SetBuzzerOn(264, 125);
-            myFinch.wait(250);
+            MyFinch.wait(250);
             SetBuzzerOn(264, 125);
-            myFinch.wait(125);
+            MyFinch.wait(125);
             SetBuzzerOn(297, 500);
-            myFinch.wait(125);
+            MyFinch.wait(125);
             SetBuzzerOn(264, 500);
-            myFinch.wait(125);
+            MyFinch.wait(125);
             SetBuzzerOn(396, 500);
-            myFinch.wait(125);
+            MyFinch.wait(125);
             SetBuzzerOn(352, 1000);
-            myFinch.wait(250);
+            MyFinch.wait(250);
             SetBuzzerOn(264, 125);
-            myFinch.wait(250);
+            MyFinch.wait(250);
             SetBuzzerOn(264, 125);
-            myFinch.wait(125);
+            MyFinch.wait(125);
             SetBuzzerOn(2642, 500);
-            myFinch.wait(125);
+            MyFinch.wait(125);
             SetBuzzerOn(440, 500);
-            myFinch.wait(125);
+            MyFinch.wait(125);
             SetBuzzerOn(352, 250);
-            myFinch.wait(125);
+            MyFinch.wait(125);
             SetBuzzerOn(352, 125);
-            myFinch.wait(125);
+            MyFinch.wait(125);
             SetBuzzerOn(330, 500);
-            myFinch.wait(125);
+            MyFinch.wait(125);
             SetBuzzerOn(297, 1000);
-            myFinch.wait(250);
+            MyFinch.wait(250);
             SetBuzzerOn(466, 125);
-            myFinch.wait(250);
+            MyFinch.wait(250);
             SetBuzzerOn(466, 125);
-            myFinch.wait(125);
+            MyFinch.wait(125);
             SetBuzzerOn(440, 500);
-            myFinch.wait(125);
+            MyFinch.wait(125);
             SetBuzzerOn(352, 500);
-            myFinch.wait(125);
+            MyFinch.wait(125);
             SetBuzzerOn(396, 500);
-            myFinch.wait(125);
+            MyFinch.wait(125);
             SetBuzzerOn(352, 1000);
         }
 
@@ -1240,9 +1228,9 @@ namespace FinchTalentShow
         {
             var (left, right, time) = GetWheelsParams();
 
-            myFinch.setMotors(left, right);
-            myFinch.wait(time);
-            myFinch.setMotors(0, 0);
+            MyFinch.setMotors(left, right);
+            MyFinch.wait(time);
+            MyFinch.setMotors(0, 0);
         }
 
         /// <summary>
@@ -1252,9 +1240,9 @@ namespace FinchTalentShow
         {
             var (left, right, time) = GetWheelsParams();
 
-            myFinch.setMotors(-left, -right);
-            myFinch.wait(time);
-            myFinch.setMotors(0, 0);
+            MyFinch.setMotors(-left, -right);
+            MyFinch.wait(time);
+            MyFinch.setMotors(0, 0);
         }
 
         /// <summary>
@@ -1262,9 +1250,9 @@ namespace FinchTalentShow
         /// </summary>
         private static void SetWheelsRight()
         {
-            myFinch.setMotors(0, 100);
-            myFinch.wait(1000);
-            myFinch.setMotors(0, 0);
+            MyFinch.setMotors(0, 100);
+            MyFinch.wait(1000);
+            MyFinch.setMotors(0, 0);
         }
 
         /// <summary>
@@ -1272,9 +1260,9 @@ namespace FinchTalentShow
         /// </summary>
         private static void SetWheelsLeft()
         {
-            myFinch.setMotors(100, 0);
-            myFinch.wait(1000);
-            myFinch.setMotors(0, 0);
+            MyFinch.setMotors(100, 0);
+            MyFinch.wait(1000);
+            MyFinch.setMotors(0, 0);
         }
 
         #endregion
@@ -1310,8 +1298,8 @@ namespace FinchTalentShow
             int[][] sensorData = new int[dataPoints][];
             for (int i = 0; i < dataPoints; i++)
             {
-                sensorData[i] = myFinch.getLightSensors();
-                myFinch.wait(time);
+                sensorData[i] = MyFinch.getLightSensors();
+                MyFinch.wait(time);
             }
             return sensorData;
         }
@@ -1401,8 +1389,8 @@ namespace FinchTalentShow
             double[] sensorData = new double[dataPoints];
             for (int i = 0; i < dataPoints; i++)
             {
-                sensorData[i] = myFinch.getTemperature();
-                myFinch.wait(time * 1000);
+                sensorData[i] = MyFinch.getTemperature();
+                MyFinch.wait(time * 1000);
             }
             if (CtoFa)
             {
@@ -1566,7 +1554,7 @@ namespace FinchTalentShow
             var (time, lightLowerThreshold, lightUpperThreshold, _, _) = GetMultipleAlarmSystemParams(alarmType); //Using Discards for data I don't need
             DisplayConsoleUI("Light Alarm System Active");
             int count = 1;
-            int ambientLight = myFinch.getLeftLightSensor();
+            int ambientLight = MyFinch.getLeftLightSensor();
             Console.WriteLine();
             Console.WriteLine($"Lower Light Threshold = {lightLowerThreshold}");
             Console.WriteLine($"Upper Light Threshold = {lightUpperThreshold}");
@@ -1577,10 +1565,10 @@ namespace FinchTalentShow
             {
                 while (true)
                 {
-                    int currentLightReading = myFinch.getLeftLightSensor();
+                    int currentLightReading = MyFinch.getLeftLightSensor();
                     Console.Write("\r" + new string(' ', Console.WindowWidth - 1) + "\r");
                     Console.Write($"Current Light Sensor Value = {currentLightReading}");
-                    myFinch.wait(1000);
+                    MyFinch.wait(1000);
                     count++;
                     if (currentLightReading < lightLowerThreshold || currentLightReading > lightUpperThreshold)
                     {
@@ -1588,26 +1576,26 @@ namespace FinchTalentShow
                         Console.WriteLine();
                         Console.WriteLine($"Current Light Reading = {currentLightReading}");
                         Console.WriteLine("Threshold's exceeded. Alarm Triggered");
-                        myFinch.setLED(255, 0, 0);
+                        MyFinch.setLED(255, 0, 0);
                         int buzzer = 5;
                         for (int i = 0; i < buzzer; i++)
                         {
-                            myFinch.noteOn(2000);
-                            myFinch.wait(500);
-                            myFinch.noteOff();
-                            myFinch.wait(500);
+                            MyFinch.noteOn(2000);
+                            MyFinch.wait(500);
+                            MyFinch.noteOff();
+                            MyFinch.wait(500);
                         }
-                        myFinch.setLED(0, 0, 0);
-                        myFinch.noteOff();
+                        MyFinch.setLED(0, 0, 0);
+                        MyFinch.noteOff();
                         break;
                     }
                     else if (count >= time)
                     {
                         DisplayConsoleUI("No Alarm Trigged");
                         Console.WriteLine("Alarm System has timed out. No events detected!");
-                        myFinch.setLED(0, 255, 0);
-                        myFinch.wait(5000);
-                        myFinch.setLED(0, 0, 0);
+                        MyFinch.setLED(0, 255, 0);
+                        MyFinch.wait(5000);
+                        MyFinch.setLED(0, 0, 0);
                     }
                 }
             }
@@ -1626,7 +1614,7 @@ namespace FinchTalentShow
             var (time, _, _, tempLowerThreshold, tempUpperThreshold) = GetMultipleAlarmSystemParams(alarmType);
             DisplayConsoleUI("Temp Alarm System Active");
             int count = 1;
-            double ambientTemp = ConvertCtoF(myFinch.getTemperature());
+            double ambientTemp = ConvertCtoF(MyFinch.getTemperature());
             Console.WriteLine();
             Console.WriteLine($"Lower Temp Threshold = {tempLowerThreshold}");
             Console.WriteLine($"Upper Temp Threshold = {tempUpperThreshold}");
@@ -1637,10 +1625,10 @@ namespace FinchTalentShow
             {
                 while (true)
                 {
-                    double currentTempReading = ConvertCtoF(myFinch.getTemperature());
+                    double currentTempReading = ConvertCtoF(MyFinch.getTemperature());
                     Console.Write("\r" + new string(' ', Console.WindowWidth - 1) + "\r");
                     Console.Write($"Current Temp Sensor Value = {currentTempReading:F2}");
-                    myFinch.wait(1000);
+                    MyFinch.wait(1000);
                     count++;
                     if (currentTempReading < tempLowerThreshold || currentTempReading > tempUpperThreshold)
                     {
@@ -1648,26 +1636,26 @@ namespace FinchTalentShow
                         Console.WriteLine();
                         Console.WriteLine($"Current Temp Reading = {currentTempReading}");
                         Console.WriteLine("Threshold's exceeded. Alarm Triggered");
-                        myFinch.setLED(255, 0, 0);
+                        MyFinch.setLED(255, 0, 0);
                         int buzzer = 5;
                         for (int i = 0; i < buzzer; i++)
                         {
-                            myFinch.noteOn(2000);
-                            myFinch.wait(500);
-                            myFinch.noteOff();
-                            myFinch.wait(500);
+                            MyFinch.noteOn(2000);
+                            MyFinch.wait(500);
+                            MyFinch.noteOff();
+                            MyFinch.wait(500);
                         }
-                        myFinch.setLED(0, 0, 0);
-                        myFinch.noteOff();
+                        MyFinch.setLED(0, 0, 0);
+                        MyFinch.noteOff();
                         break;
                     }
                     else if (count >= time)
                     {
                         DisplayConsoleUI("No Alarm Trigged");
                         Console.WriteLine("Alarm System has timed out. No events detected!");
-                        myFinch.setLED(0, 255, 0);
-                        myFinch.wait(5000);
-                        myFinch.setLED(0, 0, 0);
+                        MyFinch.setLED(0, 255, 0);
+                        MyFinch.wait(5000);
+                        MyFinch.setLED(0, 0, 0);
                     }
                 }
             }
@@ -1686,8 +1674,8 @@ namespace FinchTalentShow
             var (time, lightLowerThreshold, lightUpperThreshold, tempLowerThreshold, tempUpperThreshold) = GetMultipleAlarmSystemParams(alarmType);
             DisplayConsoleUI("Light and Temp Alarm System Active");
             int count = 1;
-            double ambientTemp = ConvertCtoF(myFinch.getTemperature());
-            int ambientLight = myFinch.getLeftLightSensor();
+            double ambientTemp = ConvertCtoF(MyFinch.getTemperature());
+            int ambientLight = MyFinch.getLeftLightSensor();
             Console.WriteLine();
             Console.WriteLine($"Lower Light Threshold = {lightLowerThreshold}");
             Console.WriteLine($"Upper Light Threshold = {lightUpperThreshold}");
@@ -1702,15 +1690,15 @@ namespace FinchTalentShow
             {
                 while (true)
                 {
-                    double currentTempReading = ConvertCtoF(myFinch.getTemperature());
-                    int currentLightReading = myFinch.getLeftLightSensor();
+                    double currentTempReading = ConvertCtoF(MyFinch.getTemperature());
+                    int currentLightReading = MyFinch.getLeftLightSensor();
                     Console.SetCursorPosition(0, 15);
                     Console.Write("\r" + new string(' ', Console.WindowWidth - 1) + "\r");
                     Console.Write($"Current Light Sensor Value = {currentLightReading}");
                     Console.SetCursorPosition(0, 16);
                     Console.Write("\r" + new string(' ', Console.WindowWidth - 1) + "\r");
                     Console.Write($"Current Temp Sensor Value = {currentTempReading:F2}");
-                    myFinch.wait(1000);
+                    MyFinch.wait(1000);
                     count++;
                     if (currentLightReading < lightLowerThreshold || currentLightReading > lightUpperThreshold || currentTempReading < tempLowerThreshold || currentTempReading > tempUpperThreshold)
                     {
@@ -1719,26 +1707,26 @@ namespace FinchTalentShow
                         Console.WriteLine($"Current Light Reading = {currentLightReading}");
                         Console.WriteLine($"Current Temp Reading = {currentTempReading}");
                         Console.WriteLine("Threshold's exceeded. Alarm Triggered");
-                        myFinch.setLED(255, 0, 0);
+                        MyFinch.setLED(255, 0, 0);
                         int buzzer = 5;
                         for (int i = 0; i < buzzer; i++)
                         {
-                            myFinch.noteOn(2000);
-                            myFinch.wait(500);
-                            myFinch.noteOff();
-                            myFinch.wait(500);
+                            MyFinch.noteOn(2000);
+                            MyFinch.wait(500);
+                            MyFinch.noteOff();
+                            MyFinch.wait(500);
                         }
-                        myFinch.setLED(0, 0, 0);
-                        myFinch.noteOff();
+                        MyFinch.setLED(0, 0, 0);
+                        MyFinch.noteOff();
                         break;
                     }
                     else if (count >= time)
                     {
                         DisplayConsoleUI("No Alarm Trigged");
                         Console.WriteLine("Alarm System has timed out. No events detected!");
-                        myFinch.setLED(0, 255, 0);
-                        myFinch.wait(5000);
-                        myFinch.setLED(0, 0, 0);
+                        MyFinch.setLED(0, 255, 0);
+                        MyFinch.wait(5000);
+                        MyFinch.setLED(0, 0, 0);
                     }
                 }
             }
@@ -1884,60 +1872,60 @@ namespace FinchTalentShow
                     case UserControlCommands.None:
                         break;
                     case UserControlCommands.MoveForward:
-                        myFinch.setMotors(motorSpeed, motorSpeed);
-                        myFinch.wait(time);
+                        MyFinch.setMotors(motorSpeed, motorSpeed);
+                        MyFinch.wait(time);
                         break;
                     case UserControlCommands.MoveBackward:
-                        myFinch.setMotors(-motorSpeed, -motorSpeed);
-                        myFinch.wait(time);
+                        MyFinch.setMotors(-motorSpeed, -motorSpeed);
+                        MyFinch.wait(time);
                         break;
                     case UserControlCommands.StopMotors:
-                        myFinch.setMotors(0, 0);
-                        myFinch.wait(time);
+                        MyFinch.setMotors(0, 0);
+                        MyFinch.wait(time);
                         break;
                     case UserControlCommands.TurnRight:
-                        myFinch.setMotors(0, motorSpeed);
-                        myFinch.wait(time);
+                        MyFinch.setMotors(0, motorSpeed);
+                        MyFinch.wait(time);
                         break;
                     case UserControlCommands.TurnLeft:
-                        myFinch.setMotors(motorSpeed, 0);
-                        myFinch.wait(time);
+                        MyFinch.setMotors(motorSpeed, 0);
+                        MyFinch.wait(time);
                         break;
                     case UserControlCommands.LEDOn:
-                        myFinch.setLED(r, g, b);
-                        myFinch.wait(time);
+                        MyFinch.setLED(r, g, b);
+                        MyFinch.wait(time);
                         break;
                     case UserControlCommands.LEDOff:
-                        myFinch.setLED(0, 0, 0);
-                        myFinch.wait(time);
+                        MyFinch.setLED(0, 0, 0);
+                        MyFinch.wait(time);
                         break;
                     case UserControlCommands.BuzzerOn:
-                        myFinch.noteOn(hertz);
-                        myFinch.wait(time);
+                        MyFinch.noteOn(hertz);
+                        MyFinch.wait(time);
                         break;
                     case UserControlCommands.BuzzerOff:
-                        myFinch.noteOff();
-                        myFinch.wait(time);
+                        MyFinch.noteOff();
+                        MyFinch.wait(time);
                         break;
                     case UserControlCommands.Spin:
-                        myFinch.setMotors(motorSpeed, 0);
-                        myFinch.wait(time);
-                        myFinch.setMotors(0, 0);
+                        MyFinch.setMotors(motorSpeed, 0);
+                        MyFinch.wait(time);
+                        MyFinch.setMotors(0, 0);
                         break;
                     case UserControlCommands.Temp:
                         Console.WriteLine();
-                        Console.WriteLine("Current Temperature Reading: {0}°f", ConvertCtoF(myFinch.getTemperature()));
-                        myFinch.wait(time);
+                        Console.WriteLine("Current Temperature Reading: {0}°f", ConvertCtoF(MyFinch.getTemperature()));
+                        MyFinch.wait(time);
                         break;
                     case UserControlCommands.Light:
                         Console.WriteLine();
-                        int[] lightLevel = myFinch.getLightSensors();
+                        int[] lightLevel = MyFinch.getLightSensors();
                         Console.WriteLine($"Current Light Level: Left Light Sensor: {lightLevel[0]} Right Light Sensor: {lightLevel[1]}");
-                        myFinch.wait(time);
+                        MyFinch.wait(time);
                         break;
                     case UserControlCommands.StarWars:
                         BuzzerStarWars();
-                        myFinch.wait(time);
+                        MyFinch.wait(time);
                         break;
                     case UserControlCommands.Done:
                         break;
@@ -1947,7 +1935,7 @@ namespace FinchTalentShow
             }
             Console.WriteLine();
             Console.WriteLine("Program has completed successfully! Clear the command list to start a new program or run it again!");
-            myFinch.disConnect();
+            MyFinch.disConnect();
             DisplayContinuePrompt();
         }
 
@@ -2029,7 +2017,7 @@ namespace FinchTalentShow
             int MAX_TRIES = 5;
             for (int i = 0; i <= MAX_TRIES; i++)
             {
-                if (myFinch.connect())
+                if (MyFinch.connect())
                 {
                     connected = true;
                 }
@@ -2070,7 +2058,7 @@ namespace FinchTalentShow
             bool disconnected = false;
             if (!disconnected)
             {
-                myFinch.disConnect();
+                MyFinch.disConnect();
                 disconnected = true;
                 return disconnected;
             }
@@ -2111,7 +2099,7 @@ namespace FinchTalentShow
         }
 
         /// <summary>
-        /// Diaplys the User Login Screen
+        /// Displays the User Login Screen
         /// </summary>
         /// <returns>Returns user menu choice</returns>
         private static int DisplayUserAuth()
@@ -2173,14 +2161,7 @@ namespace FinchTalentShow
         {
             string[] userData = File.ReadAllLines(DATAPATH);
 
-            if (userData.Length <= 0)
-            {
-                return false;
-            }
-            else
-            {
-                return true;
-            }
+            return userData.Length > 0;
         }
 
         /// <summary>
@@ -2189,8 +2170,8 @@ namespace FinchTalentShow
         /// <returns>Returns if the user is registered or not</returns>
         private static bool CheckUserLogin(string DATAPATH)
         {
-            bool IsRegistered = CheckIfRegistered(DATAPATH);
-            if (!IsRegistered)
+            bool isRegistered = CheckIfRegistered(DATAPATH);
+            if (!isRegistered)
             {
                 DisplayConsoleUI("You Need To Register!");
                 Console.WriteLine("You don't appear to have registered yet. Please Register first before logging in.");
@@ -2199,8 +2180,8 @@ namespace FinchTalentShow
             }
             else
             {
-                bool IsLoggedIn = LogIn();
-                return IsLoggedIn;
+                bool isLoggedIn = LogIn();
+                return isLoggedIn;
             }
         }
 
@@ -2210,10 +2191,10 @@ namespace FinchTalentShow
         /// <returns>Returns true if the user is logged in and false if they are not</returns>
         private static bool LogIn()
         {
-            bool IsValid = false;
+            bool isValid = false;
             int count = 0;
             const int MAX_TRIES = 3;
-            while (!IsValid)
+            while (!isValid)
             {
                 if (count < MAX_TRIES)
                 {
@@ -2225,14 +2206,14 @@ namespace FinchTalentShow
                     Console.Write("Password: ");
                     string password = Console.ReadLine();
 
-                    IsValid = IsValidPassword(userName, password);
+                    isValid = IsValidPassword(userName, password);
 
-                    if (IsValid)
+                    if (isValid)
                     {
                         Console.WriteLine();
-                        Console.WriteLine("Login Successfull!");
+                        Console.WriteLine("Login Successful!");
                         DisplayContinuePrompt();
-                        IsValid = true;
+                        isValid = true;
                     }
                     else
                     {
@@ -2274,13 +2255,10 @@ namespace FinchTalentShow
 
             if (storedUserName.Equals(userName))
             {
-                bool IsValidPass = CryptoService.IsValidPassword(password, storedPasswordSalt, storedPasswordHash);
-                return IsValidPass;
+                bool isValidPass = Crypto.IsValidPassword(password, storedPasswordSalt, storedPasswordHash);
+                return isValidPass;
             }
-            else
-            {
-                return false;
-            }
+            return false;
         }
 
         /// <summary>
@@ -2304,16 +2282,22 @@ namespace FinchTalentShow
 
             Console.Write("Username: ");
             string userName = Console.ReadLine();
-            bool IsValid = CheckIsValidUserName(userName);
+            bool isValidUserName = CheckIsValidUserName(userName);
+
 
             Console.Write("Password: ");
+            Console.ForegroundColor = ConsoleColor.Black;
+            Console.CursorVisible = false;
             string password = Console.ReadLine();
-            var passwordSalt = CryptoService.GenerateSalt();
-            var passwordHash = CryptoService.ComputeHash(password, passwordSalt);
+            var passwordSalt = Crypto.GenerateSalt();
+            var passwordHash = Crypto.ComputeHash(password, passwordSalt);
 
-            if (IsValid)
+            if (isValidUserName)
             {
+                Console.ForegroundColor = ConsoleColor.White;
+                Console.CursorVisible = true;
                 WriteToUserDataFile(DATAPATH, userName, passwordHash, passwordSalt);
+                Console.WriteLine("You are now registered!");
                 DisplayContinuePrompt();
             }
             else
@@ -2324,6 +2308,8 @@ namespace FinchTalentShow
                 Console.WriteLine($"Sorry, {userName} is not a valid username.");
                 Console.WriteLine("First character must be a letter. Remaining characters can be letters, numbers, _, -, and .");
                 Console.WriteLine("Cannot end with an _, -, . and must be between 1 and 15 characters");
+                Console.WriteLine("Please try again!");
+                DisplayContinuePrompt();
             }
         }
 
@@ -2335,8 +2321,8 @@ namespace FinchTalentShow
         private static bool CheckIsValidUserName(string userName)
         {
             Regex regex = new Regex(@"^(?=[a-zA-Z])[-\w.]{0,15}([a-zA-Z\d]|(?<![-.])_)$");
-            bool IsValid = regex.IsMatch(userName);
-            return IsValid;
+            bool isValidUserName = regex.IsMatch(userName);
+            return isValidUserName;
         }
 
         /// <summary>
