@@ -9,6 +9,15 @@ namespace FinchTalentShow
 {
     class Program
     {
+        /**************************************************************************************
+         * Title: Finch Control
+         * Application Type: Console
+         * Description: Finch Control program that performs many different tasks for the Finch
+         * Author: Peter Steele
+         * Created: October 1st, 2019
+         * Modified: Octovber 30th, 2019
+         *************************************************************************************/
+
         #region Enums for Menu's
 
         /// <summary>
@@ -952,6 +961,7 @@ namespace FinchTalentShow
         #region TalentShow Control
 
         #region LED Control
+
         /// <summary>
         /// Get's the LED parameters and passes it to the SetLEDOn Method
         /// </summary>
@@ -1972,6 +1982,7 @@ namespace FinchTalentShow
         #endregion
 
         #region Finch Robot Connection/Disconnect Logic
+
         /// <summary>
         /// Connect to the Finch Robot
         /// </summary>
